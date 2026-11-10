@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, CalendarDays, CheckCircle2, ClipboardList, FileText, ListChecks, Mail, Pause, Play, Timer } from "lucide-react";
 import { api } from "@/lib/client/api";
@@ -51,10 +52,13 @@ const greeting = () => {
 export function TodayView() {
   const { data, error, refetch } = useQuery({ queryKey: ["today"], queryFn: () => api.get<Today>("/api/today"), refetchInterval: 60_000 });
   const first = data?.name?.split(" ")[0];
+  // L'heure du serveur (UTC) n'est pas celle du navigateur : salutation calculée une fois la page affichée.
+  const [hello, setHello] = useState("Bonjour");
+  useEffect(() => setHello(greeting()), []);
   return (
     <div className="mx-auto w-full max-w-[1400px] px-1 pt-1 pb-6 md:px-3 md:pt-2">
       <PageHeader
-        title={`${greeting()}${first ? ` ${first}` : ""}`}
+        title={`${hello}${first ? ` ${first}` : ""}`}
         description={data ? day(data.date).replace(/^./, (c) => c.toUpperCase()) : "Ta journée en un coup d'œil."}
         actions={
           <Link href="/overview">
