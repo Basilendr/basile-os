@@ -157,9 +157,13 @@ registerJob({
   everyMs: 10 * 60_000,
   async run(db) {
     const { syncSchool } = await import("./school/school");
+    const { afterSchoolSync } = await import("./school/pipeline");
     const rows = await db.select({ userId: schema.schoolAccounts.userId }).from(schema.schoolAccounts).where(serverless ? eq(schema.schoolAccounts.status, "connected") : ne(schema.schoolAccounts.status, "qcm_required"));
     // Sur le Mac, un compte passé en erreur (ex. refus venu d'un serveur hébergé) est retenté avec le mot de passe enregistré.
-    for (const r of rows) await syncSchool(db, r.userId).catch((e) => log.warn("school.sync_failed", { error: String(e) }));
+    for (const r of rows) {
+      await syncSchool(db, r.userId).catch((e) => log.warn("school.sync_failed", { error: String(e) }));
+      await afterSchoolSync(db, r.userId);
+    }
   },
 });
 

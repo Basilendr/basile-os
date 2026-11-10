@@ -94,6 +94,29 @@ export async function edRequest<T>(path: string, o: { verbe?: string; query?: Re
   return { ...json, session };
 }
 
+/** Télécharge une pièce jointe de la messagerie. Renvoie le fichier, ou le code d'erreur d'École Directe. */
+export async function edDownload(fileId: number, session: Partial<Session>, year?: string): Promise<{ code: number; message?: string; data: Buffer | null; mimeType: string; session: Session }> {
+  const q = new URLSearchParams({ verbe: "get", fichierId: String(fileId), leTypeDeFichier: "PIECE_JOINTE", ...(year ? { anneeMessages: year } : {}), v: ED_VERSION });
+  let res: Response;
+  try {
+    res = await fetch(`${ED_BASE}/v3/telechargement.awp?${q}`, { method: "POST", headers: headersFor(session, true), body: edBody({ forceDownload: 0 }), signal: AbortSignal.timeout(30_000) });
+  } catch (e) {
+    throw new AppError("integration_error", `École Directe injoignable : ${(e as Error).message}`);
+  }
+  const next = absorb({ token: session.token ?? "", gtk: session.gtk ?? "", cookie: session.cookie ?? "", twoFa: session.twoFa }, res);
+  const mimeType = (res.headers.get("content-type") ?? "application/octet-stream").split(";")[0].trim();
+  const data = Buffer.from(await res.arrayBuffer());
+  // Une erreur (jeton expiré…) revient en JSON à la place du fichier.
+  if (mimeType.includes("json") || (data.length < 2000 && data.subarray(0, 1).toString() === "{")) {
+    try {
+      const j = JSON.parse(data.toString("utf8")) as EdResponse;
+      if (j.token) next.token = j.token;
+      return { code: j.code ?? 500, message: j.message, data: null, mimeType, session: next };
+    } catch {}
+  }
+  return { code: res.ok ? 200 : res.status, data: res.ok ? data : null, mimeType, session: next };
+}
+
 /** Pré-étape obligatoire avant chaque connexion : un GTK neuf (cookie + en-tête X-GTK). */
 export async function getGtk(prev?: Session): Promise<Session> {
   const base: Session = { token: prev?.token ?? "", gtk: "", cookie: prev?.cookie ?? "", twoFa: prev?.twoFa };

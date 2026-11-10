@@ -816,6 +816,11 @@ export const schoolAccounts = pgTable("school_accounts", {
   pendingQcm: jsonb("pending_qcm").$type<{ question: string; propositions: string[]; tokenEnc: string; gtk: string } | null>(),
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
   lastError: text("last_error"),
+  /** Agenda Google « École » tenu à jour avec l'emploi du temps, les devoirs et les évaluations. */
+  gcalEnabled: boolean("gcal_enabled").notNull().default(true),
+  gcalId: text("gcal_id"),
+  gcalSyncedAt: timestamp("gcal_synced_at", { withTimezone: true }),
+  gcalError: text("gcal_error"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -833,6 +838,9 @@ export const schoolMessages = pgTable(
     read: boolean("read").notNull().default(false),
     contentHtml: text("content_html"),
     files: jsonb("files").$type<{ id: number; name: string }[]>().notNull().default([]),
+    /** Analyse par l'agent emploi du temps : date, et résumé de ce qui a été appliqué ("" : rien à appliquer). */
+    agentAt: timestamp("agent_at", { withTimezone: true }),
+    agentNote: text("agent_note"),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("school_messages_uq").on(t.userId, t.folder, t.externalId), index("school_messages_date_idx").on(t.userId, t.date)],
@@ -1117,4 +1125,64 @@ export const studySessions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("study_sessions_user_idx").on(t.userId, t.endedAt)],
+);
+
+/**
+ * Modifications de l'emploi du temps appliquées par-dessus celui d'École Directe :
+ * lues dans les messages de la vie scolaire (agent), jours fériés et vacances scolaires.
+ */
+export const schoolChanges = pgTable(
+  "school_changes",
+  {
+    id: id(),
+    userId: owner(),
+    source: text("source").notNull(), // message | holiday | vacation
+    messageId: uuid("message_id").references(() => schoolMessages.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    /** Dernier jour (vacances) ; sinon égal à `date`. */
+    endDate: date("end_date").notNull(),
+    action: text("action").notNull(), // closed | cancel | change | add | event
+    /** Créneau concerné (HH:MM), vide = toute la journée. */
+    startTime: text("start_time"),
+    endTime: text("end_time"),
+    /** Cours d'origine visé par une annulation ou une modification. */
+    matchStart: text("match_start"),
+    matchSubject: text("match_subject"),
+    subject: text("subject"),
+    teacher: text("teacher"),
+    room: text("room"),
+    note: text("note").notNull().default(""),
+    createdAt: createdAt(),
+  },
+  (t) => [index("school_changes_date_idx").on(t.userId, t.date)],
+);
+
+/** Correspondance entre les éléments de l'emploi du temps et les événements de l'agenda Google « École ». */
+export const schoolGcalEvents = pgTable(
+  "school_gcal_events",
+  {
+    id: id(),
+    userId: owner(),
+    key: text("key").notNull(),
+    googleId: text("google_id").notNull(),
+    hash: text("hash").notNull(),
+    startAt: timestamp("start_at", { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("school_gcal_events_uq").on(t.userId, t.key)],
+);
+
+/** Emplois du temps envoyés par la vie scolaire (PDF), gardés pour être affichés tels quels. */
+export const schoolDocuments = pgTable(
+  "school_documents",
+  {
+    id: id(),
+    userId: owner(),
+    fileId: integer("file_id").notNull(),
+    name: text("name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    data: bytea("data").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("school_documents_uq").on(t.userId, t.fileId)],
 );

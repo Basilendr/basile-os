@@ -34,6 +34,11 @@ async function validate(name: SecretName, value: string) {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1", { headers: { "x-goog-api-key": value } }).catch(() => null);
     if (!r) throw new AppError("integration_error", "Impossible de joindre l'API Gemini.");
     if (!r.ok) throw new AppError("bad_request", `Clé Gemini refusée (${r.status}).`);
+  } else if (name === "GROQ_API_KEY" || name === "MISTRAL_API_KEY") {
+    const label = name === "GROQ_API_KEY" ? "Groq" : "Mistral";
+    const r = await fetch(name === "GROQ_API_KEY" ? "https://api.groq.com/openai/v1/models" : "https://api.mistral.ai/v1/models", { headers: { authorization: `Bearer ${value}` } }).catch(() => null);
+    if (!r) throw new AppError("integration_error", `Impossible de joindre l'API ${label}.`);
+    if (!r.ok) throw new AppError("bad_request", `Clé ${label} refusée (${r.status}).`);
   } else if (name === "VOYAGE_API_KEY") {
     const r = await fetch("https://api.voyageai.com/v1/embeddings", {
       method: "POST",

@@ -5,7 +5,7 @@ import { runDueJobs } from "@/services/scheduler";
 import { route } from "@/lib/api";
 import { schema } from "@/lib/db";
 import { googleConfigured } from "@/lib/env";
-import { providerConfigured } from "@/services/ai/provider";
+import { anyProviderConfigured } from "@/services/ai/provider";
 import { unreadCount } from "@/services/notifications";
 
 /** État réel des services : rien n'est déclaré connecté sans autorisation effective. */
@@ -16,7 +16,7 @@ export const GET = route({}, async ({ db, user }) => {
   const ints = await db.select().from(schema.integrations).where(eq(schema.integrations.userId, user.id));
   const byService = Object.fromEntries(ints.map((i) => [i.service, { status: i.status, lastSyncAt: i.lastSyncAt, lastError: i.lastError, accountEmail: i.accountEmail }]));
   const provider = prefs?.aiProvider ?? "anthropic";
-  const aiConfigured = providerConfigured(provider === "openai" || provider === "gemini" ? provider : "anthropic");
+  const aiConfigured = anyProviderConfigured();
   return {
     ai: { configured: aiConfigured, provider, model: prefs?.aiModel },
     google: {

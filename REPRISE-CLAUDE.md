@@ -84,6 +84,8 @@
    - Écran : `components/quiz/` (`quiz-view.tsx`, `quiz-player.tsx`, `drive-picker.tsx`), routes `app/api/quiz/**`, migration `0006_quiz.sql`, tests `tests/quiz.test.ts`.
    - Depuis le 10 novembre : **un quiz du soir par matière** (clé `daily:<date>:<matière>`). La matière vient du dossier Drive (sous-dossiers d'un dossier qui en regroupe au moins trois, ex. `Etudes/HGGSP`), sinon du nom du fichier, sinon de l'IA (mémorisée dans `quiz_documents.subject`). La longueur suit le cours (`questionRange` : environ une question pour 200 caractères, 8 à 25 le soir) et l'IA dresse d'abord la liste de toutes les notions (`notions`) pour en interroger chacune.
    - **Minuteur Pomodoro** : onglet École → Pomodoro (`/school?tab=focus`), `components/school/pomodoro.tsx` (minuteur global monté dans `Shell`, pastille dans la barre du haut, état dans `localStorage`), séances enregistrées dans `study_sessions` (`services/school/focus.ts`, routes `app/api/school/focus`), migration `0007_focus.sql`, tests `tests/focus.test.ts`.
+   - **Agent emploi du temps** (10 nov.) : `services/school/agent.ts` lit les messages École Directe de M. Casaux (et ceux dont l'objet parle d'emploi du temps), télécharge le PDF joint (`downloadAttachment`), compare avec École Directe et enregistre les différences dans `school_changes` ; `services/school/overlay.ts` les applique à l'affichage (annulé, modifié, ajouté, fermeture). Fériés calculés et vacances (zone C, data.education.gouv.fr) dans `services/school/days.ts`. Tout s'enchaîne après chaque synchro ED (`services/school/pipeline.ts`). Agenda Google : `services/school/gcal.ts` (agenda principal, événements marqués `basileos=school` et ignorés à l'import ; agenda « École » séparé si la permission `calendar.app.created` est accordée). Migration `0008_timetable_agent.sql`, tests `tests/timetable.test.ts`.
+   - **Emploi du temps reçu = référence** (10 nov.) : le PDF de la semaine est recopié en entier (`school_changes` action `lesson` + `week` par jour couvert) et remplace École Directe ces jours-là (intitulés ED souvent faux : « SVT » pour HGGSP), calé sur les horaires exacts d'ED (`matchDay`). Les semaines sans PDF sont corrigées par la semaine type apprise (`learnTemplate`). Repas, pastorale et sorties ne sont pas des cours (`NOT_A_CLASS`). Les heures ED sont lues en heure de Paris (`edDate`), sinon décalage d'1 h sur Vercel.
    - Les appels IA de fond ont un délai de 90 s puis un repli sur Flash-Lite (`services/ai/provider.ts`) : sans cela, une requête Gemini restée sans réponse bloquait le quiz « en préparation ».
 
 ## 3. Où on en est / prochaine étape : mise en ligne permanente sur Vercel
@@ -126,3 +128,10 @@ Sur le Mac d'origine, Node est dans `.tools/node/bin`. Ce dossier n'est pas dans
 - **`node_modules/`, `.next/`, `.tools/`** : se régénèrent avec `npm install` / `npm run build`.
 
 Aucune clé API ni aucun mot de passe ne figure dans ce dossier.
+
+- **10 nov. (suite)** :
+  - Emploi du temps : l'onglet affiche tel quel le PDF de M. Casaux pour la semaine (`services/school/documents.ts`, table `school_documents` qui garde le fichier, route `/api/school/timetable/document?file=`). Bouton « Grille » pour l'ancienne vue.
+  - IA : Groq et Mistral ajoutés (`GROQ_API_KEY`, `MISTRAL_API_KEY`). Choix automatique par fonction dans `services/ai/provider.ts` (`TASK_ROUTES`, `routeFor`, `routed`) : assistant, textes courts, quiz, lecture de PDF ; passage à l'IA suivante si quota, surcharge ou lenteur. Tableau explicatif dans Paramètres → Configuration.
+  - Écran « Aujourd'hui » sur `/` (`components/today/today-view.tsx`, `/api/today`, `services/today.ts`) ; l'ancienne vue d'ensemble est sur `/overview`.
+  - Graphique d'évolution des notes et alerte « en baisse » (`components/school/grade-trend.tsx`) dans École → Évaluations.
+  - Instance d'aperçu isolée : `DATABASE_URL= DATABASE_URL_UNPOOLED= sh scripts/preview.sh` (port 3101, base embarquée), compte créé via `/api/auth/setup`.

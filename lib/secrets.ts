@@ -5,7 +5,7 @@ import { env } from "./env";
  * Secrets de l'instance : variables d'environnement prioritaires, sinon valeurs saisies
  * dans Paramètres → Configuration (chiffrées en base, déchiffrées en mémoire au démarrage).
  */
-export const SECRET_NAMES = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "VOYAGE_API_KEY"] as const;
+export const SECRET_NAMES = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "MISTRAL_API_KEY", "VOYAGE_API_KEY"] as const;
 export type SecretName = (typeof SECRET_NAMES)[number];
 
 const g = globalThis as unknown as { __basileSecrets?: Map<SecretName, string> };

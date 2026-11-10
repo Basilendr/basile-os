@@ -105,7 +105,17 @@ export type CalendarEvent = {
 
 /* ------------------------------------------------------------------ scolarité (École Directe + saisie manuelle) */
 export type SchoolSource = "ecoledirecte" | "manual";
-export type SchoolLesson = { id: string; source: SchoolSource; subject: string; subjectCode: string | null; teacher: string | null; room: string | null; startAt: string; endAt: string; cancelled: boolean; color: string | null; kind: string };
+export type SchoolLessonChange = { kind: "cancelled" | "modified" | "added" | "event"; note: string; origin: string; before?: { subject: string; start: string; end: string; room: string | null; teacher: string | null } };
+export type SchoolLesson = { id: string; source: SchoolSource | "change" | "week"; subject: string; subjectCode: string | null; teacher: string | null; room: string | null; startAt: string; endAt: string; cancelled: boolean; color: string | null; kind: string; change?: SchoolLessonChange | null; origin?: string };
+export type SchoolDayEvent = { date: string; title: string; kind: "holiday" | "vacation" | "closed" | "event"; startTime: string | null; endTime: string | null; origin: string };
+export type SchoolTimetable = {
+  document: { messageId: string; fileId: number; name: string; fromName: string; date: string; subject: string } | null;
+  items: SchoolLesson[];
+  days: SchoolDayEvent[];
+  homework: { id: string; subject: string; title: string; dueDate: string; isTest: boolean; done: boolean; lessonId: string | null }[];
+  agent: { id: string; subject: string; fromName: string; date: string; note: string | null; at: string | null } | null;
+  google: { enabled: boolean; linked: boolean; separate: boolean; syncedAt: string | null; error: string | null } | null;
+};
 export type SchoolHomework = { id: string; source: SchoolSource; subject: string; subjectCode: string | null; title: string; contentHtml: string | null; dueDate: string; givenDate: string | null; isTest: boolean; done: boolean; teacher: string | null; quizSources?: { id: string; name: string; mimeType?: string }[] };
 export type SchoolGrade = { id: string; source: SchoolSource; subject: string; title: string; kind: string | null; value: string | null; outOf: string; coef: string; date: string; period: string | null; classAverage: string | null; nonSignificant: boolean; comment: string | null };
 export type SchoolMessage = { id: string; externalId: number; folder: string; subject: string; fromName: string | null; date: string; read: boolean; contentHtml: string | null; files: { id: number; name: string }[] };

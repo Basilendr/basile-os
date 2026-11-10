@@ -9,7 +9,7 @@ const Body = z
     accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
     density: z.enum(["comfortable", "compact"]),
     sidebarCollapsed: z.boolean(),
-    aiProvider: z.enum(["anthropic", "openai", "gemini"]),
+    aiProvider: z.enum(["anthropic", "openai", "gemini", "groq", "mistral"]),
     aiModel: z.string().min(1).max(80),
     memoryEnabled: z.boolean(),
     memoryCategories: z.array(z.enum(["preference", "project", "decision", "goal", "method"])),

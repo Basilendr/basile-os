@@ -329,12 +329,16 @@ export const IMPLS = {
       const s = await import("../school/school");
       const from = i.from ?? isoDate();
       const to = i.to ?? isoDate(new Date(Date.now() + 7 * 86400_000));
-      const lessons = await s.listLessons(db, userId, new Date(`${from}T00:00:00`), new Date(`${to}T23:59:59`));
+      const { timetableView } = await import("../school/timetable");
+      // Emploi du temps à jour : modifications de la vie scolaire, jours fériés et vacances compris.
+      const view = await timetableView(db, userId, new Date(`${from}T00:00:00`), new Date(`${to}T23:59:59`));
+      const lessons = view.items;
       const homework = await s.listHomework(db, userId, { from, to });
       const grades = (await s.listGrades(db, userId)).slice(0, 15);
       sources.push({ type: "school", id: "school", title: "École", href: "/school" });
       return {
-        lessons: lessons.map((l) => ({ subject: l.subject, start: l.startAt.toISOString(), end: l.endAt.toISOString(), room: l.room, teacher: l.teacher, cancelled: l.cancelled })),
+        lessons: lessons.map((l) => ({ subject: l.subject, start: l.startAt, end: l.endAt, room: l.room, teacher: l.teacher, cancelled: l.cancelled, change: l.change ? `${l.change.kind} — ${l.change.note}` : undefined })),
+        closedDays: view.days.map((d) => ({ date: d.date, title: d.title })),
         homework: homework.map((h) => ({ subject: h.subject, dueDate: h.dueDate, isTest: h.isTest, done: h.done, title: h.title, details: untrusted("ecoledirecte", (h.contentHtml ?? "").replace(/<[^>]+>/g, " ").slice(0, 600)) })),
         recentGrades: grades.map((g) => ({ subject: g.subject, title: g.title, value: g.value, outOf: g.outOf, coef: g.coef, date: g.date })),
         averages: s.averages(grades),

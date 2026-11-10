@@ -24,6 +24,8 @@ export const GET = route({}, async ({ db, user }) => {
       anthropic: Boolean(secret("ANTHROPIC_API_KEY")),
       openai: Boolean(secret("OPENAI_API_KEY")),
       gemini: Boolean(secret("GEMINI_API_KEY")),
+      groq: Boolean(secret("GROQ_API_KEY")),
+      mistral: Boolean(secret("MISTRAL_API_KEY")),
       embeddings: embeddingsProvider(),
     },
   };

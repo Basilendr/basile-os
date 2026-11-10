@@ -23,7 +23,11 @@ export type GEvent = {
   attendees?: { email: string; displayName?: string; responseStatus?: string }[];
   recurrence?: string[];
   reminders?: { useDefault?: boolean; overrides?: { method: string; minutes: number }[] };
+  extendedProperties?: { private?: Record<string, string> };
 };
+
+/** Événements de l'emploi du temps écrits par Basile OS dans l'agenda principal : déjà affichés dans École. */
+export const isSchoolEvent = (g: GEvent) => g.extendedProperties?.private?.basileos === "school";
 
 export const isConnected = (db: DB, userId: string) => isServiceConnected(db, userId, "calendar");
 
@@ -160,7 +164,7 @@ export async function syncCalendar(db: DB, userId: string): Promise<{ upserted: 
         throw e;
       }
       const items = page.items ?? [];
-      const cancelled = items.filter((i) => i.status === "cancelled").map((i) => i.id);
+      const cancelled = items.filter((i) => i.status === "cancelled" || isSchoolEvent(i)).map((i) => i.id);
       if (cancelled.length) {
         const r = await db
           .delete(schema.calendarEvents)
@@ -168,7 +172,7 @@ export async function syncCalendar(db: DB, userId: string): Promise<{ upserted: 
           .returning({ id: schema.calendarEvents.id });
         removed += r.length;
       }
-      for (const g of items.filter((i) => i.status !== "cancelled" && (i.start?.dateTime || i.start?.date))) {
+      for (const g of items.filter((i) => i.status !== "cancelled" && !isSchoolEvent(i) && (i.start?.dateTime || i.start?.date))) {
         const v = toLocal(g);
         await db
           .insert(schema.calendarEvents)

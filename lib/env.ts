@@ -13,6 +13,8 @@ const schema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  MISTRAL_API_KEY: z.string().optional(),
   VOYAGE_API_KEY: z.string().optional(),
   EMBEDDINGS_PROVIDER: z.enum(["openai", "voyage", "none"]).optional(),
   DISABLE_SCHEDULER: z.string().optional(),

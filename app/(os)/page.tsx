@@ -1,7 +1,7 @@
-import { Overview } from "@/components/overview/overview";
+import { TodayView } from "@/components/today/today-view";
 
-export const metadata = { title: "Vue d'ensemble" };
+export const metadata = { title: "Aujourd'hui" };
 
 export default function Page() {
-  return <Overview />;
+  return <TodayView />;
 }

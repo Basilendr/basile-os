@@ -153,7 +153,7 @@ export async function generateQuiz(db: DB, userId: string, i: GenInput): Promise
   const ai = await aiSettings(db, userId);
   if (!ai.configured) throw new AppError("not_configured", "L'IA n'est pas configurée : ajoute une clé dans les réglages pour créer des quiz.");
   const [account] = await db.select({ c: schema.schoolAccounts.className }).from(schema.schoolAccounts).where(eq(schema.schoolAccounts.userId, userId));
-  const call = () => completeJson({ provider: ai.provider, model: ai.model, system: SYSTEM(account?.c), prompt: buildPrompt(i), schema: QuizZ, effort: "low", timeoutMs: 180_000 });
+  const call = () => completeJson({ provider: ai.provider, model: ai.model, system: SYSTEM(account?.c), prompt: buildPrompt(i), schema: QuizZ, effort: "low", timeoutMs: 180_000, task: "quiz" });
   // Une réponse mal formée est le plus souvent passagère : un second essai suffit.
   const r = await call().catch((e) => {
     if (e instanceof AppError && e.message.includes("mal formée")) return call();

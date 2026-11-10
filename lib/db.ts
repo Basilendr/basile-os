@@ -61,7 +61,7 @@ async function connect(): Promise<DB> {
       await admin`select pg_advisory_unlock(727274001)`.catch(() => {});
       await admin.end({ timeout: 5 });
     }
-    const client = postgres(env.DATABASE_URL, { max: env.VERCEL ? 3 : 10, prepare: false, idle_timeout: env.VERCEL ? 20 : undefined });
+    const client = postgres(env.DATABASE_URL, { max: env.VERCEL ? 3 : 10, prepare: false, idle_timeout: 20, max_lifetime: 30 * 60 });
     const db = drizzle(client, { schema });
     log.info("db.connected", { driver: "postgres" });
     return db as unknown as DB;

@@ -1,4 +1,5 @@
 import {
+  LayoutDashboard,
   House,
   Sparkles,
   Inbox,
@@ -35,7 +36,7 @@ export type NavFolder = { id: string; label: string; hint: string; tone: FolderT
 
 /** Accès directs, toujours visibles. */
 export const SHORTCUTS: NavLeaf[] = [
-  { href: "/", label: "Accueil", icon: House, shortcut: "G O" },
+  { href: "/", label: "Aujourd'hui", icon: House, shortcut: "G O" },
   { href: "/assistant", label: "Assistant IA", icon: Sparkles, shortcut: "G A", also: ["/command", "/agents"] },
   { href: "/inbox", label: "Messagerie", icon: Inbox, shortcut: "G I" },
 ];
@@ -88,6 +89,7 @@ export const FOLDERS: NavFolder[] = [
     items: [
       { href: "/finance", label: "Finances", icon: Wallet },
       { href: "/contacts", label: "Contacts", icon: Users },
+      { href: "/overview", label: "Vue d'ensemble", icon: LayoutDashboard },
       { href: "/analytics", label: "Analyses", icon: BarChart3 },
       { href: "/automations", label: "Automatisations", icon: Workflow },
     ],

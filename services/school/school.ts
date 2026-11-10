@@ -12,6 +12,7 @@ import { zDate } from "@/lib/api";
 import { notify } from "../notifications";
 import { logActivity } from "../activity";
 import * as ed from "./ecoledirecte";
+import { atLocal } from "./overlay";
 
 type Account = typeof schema.schoolAccounts.$inferSelect;
 
@@ -116,7 +117,28 @@ async function call<T>(db: DB, userId: string, a: Account, path: string, o: { ve
   return r.data;
 }
 
-const edDate = (s: string) => new Date(s.replace(" ", "T") + (s.length <= 16 ? ":00" : ""));
+/** Pièce jointe d'un message (PDF des modifications d'emploi du temps, par exemple). */
+export async function downloadAttachment(db: DB, userId: string, fileId: number, retried = false): Promise<{ data: Buffer; mimeType: string }> {
+  const a = await getAccount(db, userId);
+  if (!a || a.status !== "connected" || !a.tokenEnc) throw new AppError("not_configured", "École Directe n'est pas connecté.");
+  const session = JSON.parse(decrypt(a.tokenEnc)) as ed.Session;
+  const r = await ed.edDownload(fileId, session, a.schoolYear ?? undefined);
+  if ((r.code === 520 || r.code === 525) && !retried) {
+    const lr = await ed.login(a.username, decrypt(a.passwordEnc), factors(a));
+    await applyLogin(db, userId, lr, { username: a.username, passwordEnc: a.passwordEnc, faEnc: a.faEnc });
+    return downloadAttachment(db, userId, fileId, true);
+  }
+  if (r.code !== 200 || !r.data) throw new ed.EdError(r.code, r.message || `Pièce jointe indisponible (${r.code}).`);
+  if (r.session.token !== session.token || r.session.cookie !== session.cookie) await db.update(schema.schoolAccounts).set({ tokenEnc: encrypt(JSON.stringify(r.session)) }).where(eq(schema.schoolAccounts.userId, userId));
+  return { data: r.data, mimeType: r.mimeType };
+}
+
+/** Les heures d'École Directe sont celles de la France, quel que soit le fuseau du serveur (UTC sur Vercel). */
+const edDate = (s: string) => {
+  const [date, t = "00:00"] = s.trim().split(/[ T]/);
+  const [h, m] = t.split(":").map(Number);
+  return atLocal(date, (h || 0) * 60 + (m || 0), "Europe/Paris");
+};
 const mailboxPath = (a: Account) => (a.accountType === "E" ? `/v3/eleves/${a.studentId}` : `/v3/familles/${a.accountId}`);
 
 /* ------------------------------------------------------------------ synchronisation */
@@ -359,14 +381,17 @@ export function averages(grades: { subject: string; value: string | null; outOf:
 }
 
 export async function schoolSummary(db: DB, userId: string) {
-  const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
+  // Jour de l'élève (heure de Paris), pas celui du serveur (UTC sur Vercel).
+  const { userTz } = await import("../quiz/quiz");
+  const { localNow, shiftDate, zonedMidnight } = await import("../quiz/time");
+  const tz = await userTz(db, userId);
+  const today = localNow(tz).date;
+  const start = zonedMidnight(today, tz);
   const [account, lessons, homework, tests, unread, grades] = await Promise.all([
     getAccount(db, userId),
-    listLessons(db, userId, start, addDays(start, 1)),
-    listHomework(db, userId, { from: isoDate(), to: isoDate(addDays(now, 7)), kind: "homework", done: false }),
-    listHomework(db, userId, { from: isoDate(), to: isoDate(addDays(now, 21)), kind: "test" }),
+    import("./timetable").then((t) => t.timetableView(db, userId, start, zonedMidnight(shiftDate(today, 1), tz))).then((v) => v.items),
+    listHomework(db, userId, { from: today, to: shiftDate(today, 7), kind: "homework", done: false }),
+    listHomework(db, userId, { from: today, to: shiftDate(today, 21), kind: "test" }),
     db.select({ n: sql<number>`count(*)::int` }).from(schema.schoolMessages).where(and(eq(schema.schoolMessages.userId, userId), eq(schema.schoolMessages.read, false))),
     listGrades(db, userId),
   ]);

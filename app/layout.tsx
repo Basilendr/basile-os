@@ -10,11 +10,16 @@ import { getDb, schema } from "@/lib/db";
 export const metadata: Metadata = {
   title: { default: "Basile OS", template: "%s · Basile OS" },
   description: "Système d'exploitation personnel augmenté par l'IA",
+  applicationName: "Basile OS",
+  icons: { icon: "/api/pwa-icon/192", apple: "/api/pwa-icon/180" },
+  appleWebApp: { capable: true, title: "Basile OS", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },

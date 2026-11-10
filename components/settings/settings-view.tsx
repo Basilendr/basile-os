@@ -218,13 +218,15 @@ function AiSettings({ prefs }: { prefs: Prefs }) {
   const totals = usage?.last30Days.reduce((a, r) => ({ calls: a.calls + r.calls, input: a.input + r.input, output: a.output + r.output }), { calls: 0, input: 0, output: 0 });
   return (
     <>
-      <Section title="Fournisseur et modèle" description="Les clés API se règlent dans Paramètres → Configuration ; elles restent chiffrées sur le serveur.">
+      <Section title="IA principale" description="Choix automatique : chaque fonction utilise l'IA la plus adaptée parmi celles dont tu as mis la clé (détail dans Paramètres → Configuration). Le modèle choisi ici sert quand ce fournisseur répond.">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Fournisseur">
             <Select value={prefs.aiProvider} onChange={(e) => save({ aiProvider: e.target.value, aiModel: MODELS[e.target.value][0] })}>
               <option value="anthropic">Anthropic (Claude)</option>
               <option value="openai">OpenAI (ChatGPT)</option>
               <option value="gemini">Google Gemini (offre gratuite)</option>
+              <option value="groq">Groq (offre gratuite)</option>
+              <option value="mistral">Mistral (offre gratuite)</option>
             </Select>
           </Field>
           <Field label="Modèle">

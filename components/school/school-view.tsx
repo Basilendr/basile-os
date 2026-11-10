@@ -3,9 +3,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpenCheck, CalendarClock, ChevronLeft, ChevronRight, ClipboardList, FileText, FolderOpen, GraduationCap, ListChecks, Plus, RefreshCw, Timer, Trash2, X } from "lucide-react";
+import { BookOpenCheck, CalendarClock, ChevronLeft, ChevronRight, ClipboardList, FileText, FolderOpen, GraduationCap, ListChecks, Plus, RefreshCw, Sparkles, Timer, Trash2, X } from "lucide-react";
 import { api, qs } from "@/lib/client/api";
-import { addDays, cn, formatDueDate, formatTime, isoDate, startOfDay } from "@/lib/utils";
+import { addDays, cn, formatDueDate, formatTime, isoDate, relativeTime, startOfDay } from "@/lib/utils";
 import { Badge, Card, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/tabs";
@@ -15,13 +15,14 @@ import { useToast } from "@/components/ui/toast";
 import { useSchoolAccount } from "@/components/settings/school-connect";
 import { DrivePicker, type PickedDoc } from "@/components/quiz/drive-picker";
 import { PomodoroView } from "./pomodoro";
+import { GradeTrend } from "./grade-trend";
 import { useSize } from "@/hooks/use-size";
-import type { SchoolGrade, SchoolHomework, SchoolLesson } from "@/types";
+import type { SchoolGrade, SchoolHomework, SchoolLesson, SchoolTimetable } from "@/types";
 
 type Tab = "timetable" | "homework" | "evals" | "focus";
 const PALETTE = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "#ff375f", "#5ac8fa", "#a2845e", "#64d2ff"];
 /** Couleur stable par matière (École Directe fournit parfois la sienne). */
-const subjectColor = (s: string, own?: string | null) => own || PALETTE[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % PALETTE.length];
+export const subjectColor = (s: string, own?: string | null) => own || PALETTE[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % PALETTE.length];
 
 function mondayOf(d: Date) {
   const s = startOfDay(d);
@@ -101,13 +102,27 @@ export function SchoolView() {
 
 /* ------------------------------------------------------------------ emploi du temps */
 
+/** Salle sans le préfixe technique d'École Directe (« <Salles normales 117>007 » → « 007 »). */
+const roomName = (r: string | null) => (r ? r.replace(/<[^>]*>/g, "").trim() : "");
+const DAY_TONE: Record<string, string> = {
+  holiday: "border-[color-mix(in_srgb,var(--success)_30%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-success",
+  vacation: "border-[color-mix(in_srgb,var(--success)_30%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-success",
+  closed: "border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-warning",
+  event: "border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--accent)_9%,transparent)] text-accent",
+};
+
 function Timetable() {
-  const [week, setWeek] = useState(() => mondayOf(new Date()));
+  const sp = useSearchParams();
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [week, setWeek] = useState(() => mondayOf(sp.get("week") ? new Date(`${sp.get("week")}T12:00:00`) : new Date()));
   const [adding, setAdding] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const end = addDays(week, 7);
   const { data, error, refetch } = useQuery({
     queryKey: ["school", "timetable", week.toISOString()],
-    queryFn: () => api.get<{ items: SchoolLesson[] }>(`/api/school/timetable${qs({ from: week.toISOString(), to: end.toISOString() })}`),
+    queryFn: () => api.get<SchoolTimetable>(`/api/school/timetable${qs({ from: week.toISOString(), to: end.toISOString() })}`),
   });
   const lessons = data?.items ?? [];
   const showWeekend = lessons.some((l) => [0, 6].includes(new Date(l.startAt).getDay()));
@@ -123,6 +138,35 @@ function Timetable() {
   const HOUR_PX = Math.max(34, Math.floor((bodySize.height - 58) / (HOURS.end - HOURS.start)) || 48);
   const now = new Date();
   const nowTop = (now.getHours() + now.getMinutes() / 60 - HOURS.start) * HOUR_PX;
+  const hwFor = (lessonId: string) => (data?.homework ?? []).filter((h) => h.lessonId === lessonId);
+  const changed = lessons.filter((l) => l.change && l.change.origin.startsWith("Message")).length;
+  const google = data?.google;
+  const doc = data?.document ?? null;
+  const showDoc = !!doc && !showGrid;
+  const connectGoogle = `/api/integrations/google/connect?services=calendar&returnTo=${encodeURIComponent("/school?tab=timetable")}`;
+
+  const checkMessages = async () => {
+    setChecking(true);
+    try {
+      const r = await api.post<{ analysed: number; changes: number }>("/api/school/timetable/agent");
+      await qc.invalidateQueries({ queryKey: ["school"] });
+      toast({ kind: r.changes ? "success" : "info", title: r.changes ? "Emploi du temps mis à jour" : "Aucune nouvelle modification", description: r.analysed ? `${r.analysed} message${r.analysed > 1 ? "s" : ""} de la vie scolaire analysé${r.analysed > 1 ? "s" : ""}.` : "Aucun nouveau message sur l'emploi du temps." });
+    } catch (e) {
+      toast({ kind: "error", title: "Vérification impossible", description: (e as Error).message });
+    } finally {
+      setChecking(false);
+    }
+  };
+  const syncGoogle = async () => {
+    try {
+      const r = await api.post<{ state: string }>("/api/school/calendar");
+      await qc.invalidateQueries({ queryKey: ["school", "timetable"] });
+      if (r.state === "disconnected") window.location.href = connectGoogle;
+      else toast({ kind: r.state === "synced" ? "success" : "error", title: r.state === "synced" ? "Agenda Google à jour" : "Synchronisation Google impossible" });
+    } catch (e) {
+      toast({ kind: "error", title: "Synchronisation Google impossible", description: (e as Error).message });
+    }
+  };
 
   return (
     <Card className="flex min-h-[460px] flex-1 flex-col overflow-hidden">
@@ -139,25 +183,110 @@ function Timetable() {
         <span className="text-[14px] font-medium">
           {week.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} – {addDays(week, days.length - 1).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
         </span>
-        <span className="t-meta ml-auto">{lessons.length ? `${lessons.length} cours` : "Aucun cours cette semaine"}</span>
-        <Button size="sm" variant="primary" icon={<Plus className="size-3.5" />} onClick={() => setAdding(true)}>
-          Ajouter un cours
-        </Button>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          {google?.linked && !google.separate && (
+            <a href={connectGoogle} className="t-meta hover:text-fg-2 hover:underline" title="Autoriser Basile OS à créer un agenda « École » séparé dans Google Agenda">
+              Agenda « École » séparé
+            </a>
+          )}
+          {google && (google.linked ? (
+            <button onClick={syncGoogle} className="focus-ring inline-flex h-8 items-center gap-1.5 rounded-[9px] border border-line px-2.5 text-[12.5px] text-fg-2 hover:bg-raised" title={google.error ? `Erreur : ${google.error}` : "Synchroniser maintenant"}>
+              <CalendarClock className={cn("size-3.5", google.error ? "text-danger" : "text-success")} />
+              {google.error ? "Google Agenda : erreur" : `Google Agenda${google.syncedAt ? ` · ${relativeTime(google.syncedAt)}` : ""}`}
+            </button>
+          ) : (
+            <a href={connectGoogle}>
+              <Button size="sm" icon={<CalendarClock className="size-3.5" />}>
+                Relier à Google Agenda
+              </Button>
+            </a>
+          ))}
+          {doc && (
+            <Segmented
+              value={showGrid ? "grid" : "doc"}
+              onChange={(v) => setShowGrid(v === "grid")}
+              options={[
+                { value: "doc", label: "Document reçu" },
+                { value: "grid", label: "Grille" },
+              ]}
+            />
+          )}
+          <Button size="sm" variant="ghost" icon={<RefreshCw className={cn("size-3.5", checking && "animate-spin")} />} disabled={checking} onClick={checkMessages}>
+            Vérifier les messages
+          </Button>
+          <Button size="sm" variant="primary" icon={<Plus className="size-3.5" />} onClick={() => setAdding(true)}>
+            Ajouter un cours
+          </Button>
+        </div>
       </div>
+      {showDoc && doc && (
+        <p className="flex flex-wrap items-center gap-2 border-b border-line-soft px-4 py-2 text-[12.5px] text-fg-2">
+          <FileText className="size-3.5 shrink-0 text-fg-3" />
+          <span className="min-w-0 flex-1">
+            Emploi du temps envoyé par <span className="font-medium text-fg">{doc.fromName}</span> le {new Date(doc.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {formatTime(doc.date)}
+          </span>
+          <a href={`/api/school/timetable/document?file=${doc.fileId}`} target="_blank" rel="noreferrer" className="t-meta hover:text-fg-2 hover:underline">
+            Ouvrir
+          </a>
+        </p>
+      )}
+      {!showDoc && data?.agent && (
+        <p className="flex items-start gap-2 border-b border-line-soft bg-[color-mix(in_srgb,var(--warning)_7%,transparent)] px-4 py-2 text-[12.5px] text-fg-2">
+          <Sparkles className="mt-0.5 size-3.5 shrink-0 text-warning" />
+          <span>
+            <span className="font-medium text-fg">Mis à jour automatiquement</span> d'après le message de {data.agent.fromName} du {new Date(data.agent.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : {data.agent.note}
+            {changed > 0 && ` (${changed} cours concerné${changed > 1 ? "s" : ""} cette semaine)`}
+          </span>
+        </p>
+      )}
       {error ? (
         <ErrorState error={error} onRetry={() => refetch()} />
       ) : !data ? (
         <Skeleton className="m-4 min-h-[300px] flex-1" />
+      ) : showDoc && doc ? (
+        <div className="min-h-[520px] flex-1 bg-raised">
+          {/\.pdf$/i.test(doc.name) ? (
+            <iframe key={doc.fileId} title={`Emploi du temps — ${doc.name}`} src={`/api/school/timetable/document?file=${doc.fileId}#view=Fit&navpanes=0`} className="size-full min-h-[520px] border-0" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/api/school/timetable/document?file=${doc.fileId}`} alt={`Emploi du temps — ${doc.name}`} className="mx-auto max-h-full max-w-full object-contain" />
+          )}
+        </div>
       ) : (
         <div ref={body} className="min-h-0 flex-1 overflow-auto">
           <div className="grid min-w-[720px]" style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` }}>
             <div />
-            {days.map((d) => (
-              <div key={d.toISOString()} className={cn("border-b border-l border-line-soft px-2 py-2.5 text-center", isoDate(d) === today && "bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]")}>
-                <p className="t-meta uppercase">{d.toLocaleDateString("fr-FR", { weekday: "short" })}</p>
-                <p className={cn("t-num mx-auto mt-0.5 grid size-7 place-items-center rounded-full text-[14px] font-semibold", isoDate(d) === today && "bg-primary text-primary-fg")}>{d.getDate()}</p>
-              </div>
-            ))}
+            {days.map((d) => {
+              const iso = isoDate(d);
+              const events = data.days.filter((x) => x.date === iso);
+              const due = data.homework.filter((h) => h.dueDate === iso);
+              return (
+                <div key={iso} className={cn("border-b border-l border-line-soft px-1.5 py-2 text-center", iso === today && "bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]")}>
+                  <p className="t-meta uppercase">{d.toLocaleDateString("fr-FR", { weekday: "short" })}</p>
+                  <p className={cn("t-num mx-auto mt-0.5 grid size-7 place-items-center rounded-full text-[14px] font-semibold", iso === today && "bg-primary text-primary-fg")}>{d.getDate()}</p>
+                  {events.map((ev) => (
+                    <p key={ev.title} title={ev.origin} className={cn("mt-1 truncate rounded-[6px] border px-1.5 py-0.5 text-[11px] font-medium", DAY_TONE[ev.kind])}>
+                      {ev.title}
+                      {ev.startTime ? ` ${ev.startTime}–${ev.endTime ?? ""}` : ""}
+                    </p>
+                  ))}
+                  {due.length > 0 && (
+                    <div className="mt-1 flex flex-wrap justify-center gap-1">
+                      {due.map((h) => (
+                        <Link
+                          key={h.id}
+                          href={h.isTest ? "/quiz" : "/school?tab=homework"}
+                          title={`${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? ` — ${h.title}` : ""}`}
+                          className={cn("max-w-full truncate rounded-[6px] px-1.5 py-0.5 text-[10.5px] font-semibold", h.isTest ? "bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-danger" : h.done ? "bg-raised text-fg-3 line-through" : "bg-raised text-fg-2")}
+                        >
+                          {h.isTest ? "Éval" : "Devoir"} · {h.subject.split(/[ .&-]/)[0]}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <div className="relative" style={{ height: (HOURS.end - HOURS.start) * HOUR_PX }}>
               {Array.from({ length: HOURS.end - HOURS.start }, (_, i) => (
                 <span key={i} className="t-meta t-num absolute right-2 -translate-y-1/2" style={{ top: i * HOUR_PX }}>
@@ -168,8 +297,9 @@ function Timetable() {
             {days.map((d) => {
               const iso = isoDate(d);
               const dayLessons = lessons.filter((l) => isoDate(new Date(l.startAt)) === iso);
+              const off = data.days.some((x) => x.date === iso && (x.kind === "holiday" || x.kind === "vacation" || (x.kind === "closed" && !x.startTime)));
               return (
-                <div key={iso} className={cn("relative border-l border-line-soft", iso === today && "bg-[color-mix(in_srgb,var(--accent)_3%,transparent)]")} style={{ height: (HOURS.end - HOURS.start) * HOUR_PX }}>
+                <div key={iso} className={cn("relative border-l border-line-soft", iso === today && "bg-[color-mix(in_srgb,var(--accent)_3%,transparent)]", off && "bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,color-mix(in_srgb,var(--fg-3)_7%,transparent)_8px,color-mix(in_srgb,var(--fg-3)_7%,transparent)_9px)]")} style={{ height: (HOURS.end - HOURS.start) * HOUR_PX }}>
                   {Array.from({ length: HOURS.end - HOURS.start }, (_, i) => (
                     <div key={i} className="absolute inset-x-0 border-t border-line-soft" style={{ top: i * HOUR_PX }} />
                   ))}
@@ -184,23 +314,33 @@ function Timetable() {
                     const e = new Date(l.endAt);
                     const top = (s.getHours() + s.getMinutes() / 60 - HOURS.start) * HOUR_PX;
                     const h = Math.max(22, ((e.getTime() - s.getTime()) / 3_600_000) * HOUR_PX - 3);
-                    const color = subjectColor(l.subject, l.color);
+                    const color = l.kind === "EVENT" ? "var(--warning)" : subjectColor(l.subject, l.color);
+                    const hw = hwFor(l.id);
+                    const ch = l.change;
+                    const flag = ch?.kind === "modified" ? "Modifié" : ch?.kind === "added" ? "Ajouté" : null;
                     return (
                       <button
                         key={l.id}
                         onClick={() => setSelected(l)}
-                        className={cn("focus-ring absolute inset-x-1 overflow-hidden rounded-[9px] border px-2 py-1 text-left transition-shadow hover:shadow-[var(--shadow-md)]", l.cancelled && "opacity-55")}
-                        style={{ top: Math.max(0, top) + 1, height: h, background: `color-mix(in srgb, ${color} 12%, var(--card))`, borderColor: `color-mix(in srgb, ${color} 30%, transparent)` }}
+                        title={ch ? `${ch.note || flag || ""} — ${ch.origin}` : undefined}
+                        className={cn("focus-ring absolute inset-x-1 overflow-hidden rounded-[9px] border px-2 py-1 text-left transition-shadow hover:shadow-[var(--shadow-md)]", l.cancelled && "opacity-45", (flag || l.kind === "EVENT") && "border-dashed border-[1.5px]")}
+                        style={{ top: Math.max(0, top) + 1, height: h, background: `color-mix(in srgb, ${color} 12%, var(--card))`, borderColor: flag ? "var(--warning)" : `color-mix(in srgb, ${color} 30%, transparent)` }}
                       >
                         <span className="absolute inset-y-1 left-1 w-[3px] rounded-full" style={{ background: color }} />
-                        <span className={cn("block truncate pl-1.5 text-[12px] font-semibold", l.cancelled && "line-through")}>{l.subject}</span>
-                        {h > 34 && (
+                        <span className="flex items-center gap-1 pl-1.5">
+                          <span className={cn("min-w-0 flex-1 truncate text-[12px] font-semibold", l.cancelled && "line-through")}>{l.subject}</span>
+                          {hw.some((x) => x.isTest) && <span className="shrink-0 rounded-[4px] bg-danger px-1 text-[9.5px] font-bold text-white">ÉVAL</span>}
+                          {hw.some((x) => !x.isTest && !x.done) && <ClipboardList className="size-3 shrink-0 text-fg-2" aria-label="Devoir à rendre" />}
+                        </span>
+                        {flag && h > 30 && <span className="block truncate pl-1.5 text-[10.5px] font-semibold text-warning">{flag}{ch?.before && ch.before.start !== formatTime(s) ? ` (au lieu de ${ch.before.start})` : ""}</span>}
+                        {l.cancelled && h > 30 && <span className="block truncate pl-1.5 text-[10.5px] font-semibold text-danger">{ch?.note || "Annulé"}</span>}
+                        {h > 34 && !l.cancelled && (
                           <span className="t-meta block truncate pl-1.5">
                             {formatTime(s)}–{formatTime(e)}
-                            {l.room ? ` · ${l.room}` : ""}
+                            {roomName(l.room) ? ` · ${roomName(l.room)}` : ""}
                           </span>
                         )}
-                        {h > 52 && l.teacher && <span className="t-meta block truncate pl-1.5">{l.teacher}</span>}
+                        {h > 52 && !l.cancelled && l.teacher && <span className="t-meta block truncate pl-1.5">{l.teacher}</span>}
                       </button>
                     );
                   })}
@@ -211,28 +351,54 @@ function Timetable() {
         </div>
       )}
       <LessonDialog open={adding} onClose={() => setAdding(false)} defaultDate={isoDate(week) < today && today < isoDate(end) ? today : isoDate(week)} />
-      <LessonDetails lesson={selected} onClose={() => setSelected(null)} />
+      <LessonDetails lesson={selected} homework={selected ? hwFor(selected.id) : []} onClose={() => setSelected(null)} />
     </Card>
   );
 }
 
-function LessonDetails({ lesson, onClose }: { lesson: SchoolLesson | null; onClose: () => void }) {
+function LessonDetails({ lesson, homework, onClose }: { lesson: SchoolLesson | null; homework: SchoolTimetable["homework"]; onClose: () => void }) {
   const qc = useQueryClient();
   const { toast } = useToast();
+  const ch = lesson?.change;
   return (
     <Dialog open={!!lesson} onClose={onClose} title={lesson?.subject} description={lesson ? `${new Date(lesson.startAt).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} · ${formatTime(lesson.startAt)}–${formatTime(lesson.endAt)}` : undefined} size="sm">
       {lesson && (
         <div className="space-y-3 text-[13px]">
+          {ch && (
+            <div className={cn("rounded-[10px] border px-3 py-2", ch.kind === "cancelled" ? "border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_7%,transparent)]" : "border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_9%,transparent)]")}>
+              <p className="font-medium">{ch.kind === "cancelled" ? "Cours annulé" : ch.kind === "modified" ? "Cours modifié" : ch.kind === "added" ? "Cours ajouté" : "Événement"}{ch.note ? ` — ${ch.note}` : ""}</p>
+              {ch.before && (
+                <p className="t-meta mt-0.5">
+                  Avant : {ch.before.subject}, {ch.before.start}–{ch.before.end}
+                  {roomName(ch.before.room) ? `, salle ${roomName(ch.before.room)}` : ""}
+                </p>
+              )}
+              <p className="t-meta mt-0.5">{ch.origin}</p>
+            </div>
+          )}
           <dl className="grid grid-cols-[110px_1fr] gap-y-1.5">
             <dt className="text-fg-3">Salle</dt>
-            <dd>{lesson.room || "—"}</dd>
+            <dd>{roomName(lesson.room) || "—"}</dd>
             <dt className="text-fg-3">Professeur</dt>
             <dd>{lesson.teacher || "—"}</dd>
             <dt className="text-fg-3">Statut</dt>
-            <dd>{lesson.cancelled ? <Badge tone="danger">Annulé</Badge> : <Badge tone="success">Maintenu</Badge>}</dd>
+            <dd>{lesson.cancelled ? <Badge tone="danger">Annulé</Badge> : ch?.kind === "modified" ? <Badge tone="warning">Modifié</Badge> : <Badge tone="success">Maintenu</Badge>}</dd>
             <dt className="text-fg-3">Source</dt>
-            <dd>{lesson.source === "ecoledirecte" ? "École Directe" : "Ajout manuel"}</dd>
+            <dd>{lesson.source === "week" ? `Emploi du temps de la semaine — ${lesson.origin ?? "vie scolaire"}` : lesson.source === "ecoledirecte" ? (lesson.origin ? `École Directe, corrigé d'après l'emploi du temps reçu (${lesson.origin})` : "École Directe") : lesson.source === "change" ? "Message de la vie scolaire" : "Ajout manuel"}</dd>
           </dl>
+          {homework.length > 0 && (
+            <div>
+              <p className="mb-1 font-medium">Pour ce cours</p>
+              <ul className="space-y-1">
+                {homework.map((h) => (
+                  <li key={h.id} className="flex items-start gap-2">
+                    <Badge tone={h.isTest ? "danger" : h.done ? "success" : "neutral"}>{h.isTest ? "Évaluation" : h.done ? "Fait" : "Devoir"}</Badge>
+                    <span className="min-w-0 flex-1">{h.title || h.subject}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {lesson.source === "manual" && (
             <div className="flex justify-end">
               <Button
@@ -641,6 +807,9 @@ function Evaluations() {
             )}
           </Card>
         </div>
+        <Card>
+          <GradeTrend grades={data.items} subject={subject} />
+        </Card>
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-4 py-3">
             <h3 className="t-section">Notes{subject ? ` · ${subject}` : ""}</h3>

@@ -20,6 +20,14 @@ export const SCOPES: Record<GoogleService, string[]> = {
   contacts: ["https://www.googleapis.com/auth/contacts.readonly"],
 };
 const BASE_SCOPES = ["openid", "email"];
+/** Permissions demandées en plus, sans être exigées : agenda « École » séparé, créé et géré par Basile OS. */
+export const EXTRA_SCOPES: Partial<Record<GoogleService, string[]>> = { calendar: ["https://www.googleapis.com/auth/calendar.app.created"] };
+
+/** Permissions réellement accordées par Google (jeton enregistré). */
+export async function grantedScopes(db: DB, userId: string) {
+  const [t] = await db.select({ scopes: schema.oauthTokens.scopes }).from(schema.oauthTokens).where(and(eq(schema.oauthTokens.userId, userId), eq(schema.oauthTokens.provider, "google")));
+  return t?.scopes ?? [];
+}
 
 export const redirectUri = () => `${env.APP_URL}/api/integrations/google/callback`;
 
@@ -44,7 +52,7 @@ export async function buildAuthUrl(db: DB, userId: string | null, services: Goog
     client_id: secret("GOOGLE_CLIENT_ID")!,
     redirect_uri: redirectUri(),
     response_type: "code",
-    scope: [...BASE_SCOPES, ...services.flatMap((s) => SCOPES[s])].join(" "),
+    scope: [...BASE_SCOPES, ...services.flatMap((s) => [...SCOPES[s], ...(EXTRA_SCOPES[s] ?? [])])].join(" "),
     access_type: "offline",
     include_granted_scopes: "true",
     prompt: purpose === "login" ? "select_account consent" : "consent",

@@ -3,7 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import type { DB } from "@/lib/db";
 import { schema } from "@/lib/db";
 import { isServiceConnected } from "../google/oauth";
-import { DEFAULT_MODELS, providerConfigured, type ProviderName } from "./provider";
+import { DEFAULT_MODELS, anyProviderConfigured, type ProviderName } from "./provider";
 
 export async function integrationsState(db: DB, userId: string) {
   const [gmail, calendar, school] = await Promise.all([
@@ -17,7 +17,7 @@ export async function integrationsState(db: DB, userId: string) {
 export async function aiSettings(db: DB, userId: string) {
   const [p] = await db.select().from(schema.userPreferences).where(eq(schema.userPreferences.userId, userId));
   const provider = (p?.aiProvider ?? "anthropic") as ProviderName;
-  return { provider, model: p?.aiModel || DEFAULT_MODELS[provider], memoryEnabled: p?.memoryEnabled ?? true, configured: providerConfigured(provider) };
+  return { provider, model: p?.aiModel || DEFAULT_MODELS[provider], memoryEnabled: p?.memoryEnabled ?? true, configured: anyProviderConfigured() };
 }
 
 export type PageContext = { path?: string; entityType?: string; entityId?: string; title?: string };

@@ -130,7 +130,7 @@ function MobileTabBar() {
   const pathname = usePathname();
   const { setMobileNavOpen } = useUI();
   const tabs = [
-    { href: "/", label: "Accueil", icon: House },
+    { href: "/", label: "Aujourd'hui", icon: House },
     { href: "/assistant", label: "Assistant", icon: Sparkles },
     { href: "/inbox", label: "Messages", icon: Inbox },
     { href: "/calendar", label: "Agenda", icon: CalendarDays },

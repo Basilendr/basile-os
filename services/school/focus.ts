@@ -5,6 +5,7 @@ import { schema, type DB } from "@/lib/db";
 import { notFound } from "@/lib/errors";
 import { localNow, shiftDate, zonedMidnight } from "../quiz/time";
 import { userTz } from "../quiz/quiz";
+import { timetableView } from "./timetable";
 
 /** Minuteur Pomodoro : séances de travail enregistrées par matière, et temps de travail du jour et de la semaine. */
 
@@ -62,7 +63,7 @@ export async function focusOverview(db: DB, userId: string) {
   const since = zonedMidnight(weekStart, tz);
   const [sessions, lessons, homework, quizzes] = await Promise.all([
     db.select().from(s).where(and(eq(s.userId, userId), gte(s.endedAt, zonedMidnight(shiftDate(now.date, -30), tz)))).orderBy(desc(s.endedAt)).limit(400),
-    db.select({ subject: schema.schoolLessons.subject }).from(schema.schoolLessons).where(and(eq(schema.schoolLessons.userId, userId), gte(schema.schoolLessons.startAt, zonedMidnight(shiftDate(now.date, -21), tz)), lte(schema.schoolLessons.startAt, zonedMidnight(shiftDate(now.date, 8), tz)))),
+    timetableView(db, userId, zonedMidnight(shiftDate(now.date, -21), tz), zonedMidnight(shiftDate(now.date, 8), tz)).then((v) => v.items.filter((l) => !l.cancelled)),
     db.select().from(schema.schoolHomework).where(and(eq(schema.schoolHomework.userId, userId), gte(schema.schoolHomework.dueDate, now.date), lte(schema.schoolHomework.dueDate, shiftDate(now.date, 21)))),
     db.select({ subject: schema.quizzes.subject }).from(schema.quizzes).where(and(eq(schema.quizzes.userId, userId), gte(schema.quizzes.forDate, shiftDate(now.date, -30)))),
   ]);

@@ -9,16 +9,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
-type SecretName = "ANTHROPIC_API_KEY" | "OPENAI_API_KEY" | "GEMINI_API_KEY" | "VOYAGE_API_KEY" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
-type Config = { secrets: Record<SecretName, { set: boolean; source: "env" | "app" | null; hint: string | null }>; redirectUri: string; appUrl: string };
+type SecretName = "ANTHROPIC_API_KEY" | "OPENAI_API_KEY" | "GEMINI_API_KEY" | "GROQ_API_KEY" | "MISTRAL_API_KEY" | "VOYAGE_API_KEY" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
+type Route = { task: string; label: string; description: string; active: string | null; chain: { provider: string; label: string; configured: boolean }[] };
+type Config = { secrets: Record<SecretName, { set: boolean; source: "env" | "app" | null; hint: string | null }>; routes: Route[]; redirectUri: string; appUrl: string };
 
 const GROUPS: { title: string; description: React.ReactNode; keys: { name: SecretName; label: string; placeholder: string; help: React.ReactNode }[] }[] = [
   {
     title: "Intelligence artificielle",
-    description: "Une seule clé suffit pour activer l'assistant, les agents, le briefing et les résumés. La clé est vérifiée auprès du fournisseur avant d'être enregistrée.",
+    description: "Une seule clé suffit, mais avec plusieurs IA gratuites le site choisit tout seul la meilleure pour chaque fonction et passe à la suivante si l'une est saturée. Chaque clé est vérifiée avant d'être enregistrée. Ne mets jamais de carte bancaire sur ces sites : sans carte, rien ne peut être facturé.",
     keys: [
       { name: "ANTHROPIC_API_KEY", label: "Clé API Anthropic (Claude)", placeholder: "sk-ant-…", help: <>Créer une clé sur <a className="text-accent hover:underline" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> → API Keys.</> },
       { name: "GEMINI_API_KEY", label: "Clé API Google Gemini (gratuite)", placeholder: "AIza…", help: <>Gratuite avec quota : <a className="text-accent hover:underline" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a> → Create API key. Activée automatiquement si aucune autre IA n'est configurée.</> },
+      { name: "GROQ_API_KEY", label: "Clé API Groq (gratuite)", placeholder: "gsk_…", help: <>Gratuite, sans carte : <a className="text-accent hover:underline" href="https://console.groq.com/keys" target="_blank" rel="noreferrer">console.groq.com/keys</a> → Create API Key. La plus rapide : sert en premier pour les textes courts (briefing, résumés, correction des réponses de quiz) et prend le relais de Gemini pour l'assistant.</> },
+      { name: "MISTRAL_API_KEY", label: "Clé API Mistral (gratuite)", placeholder: "…", help: <>Offre gratuite « Experiment » (vérification par SMS, sans carte) : <a className="text-accent hover:underline" href="https://console.mistral.ai/api-keys" target="_blank" rel="noreferrer">console.mistral.ai/api-keys</a> → Create new key. Française, lit les PDF et les photos : prend le relais de Gemini pour les emplois du temps reçus, les cours scannés et les quiz.</> },
       { name: "OPENAI_API_KEY", label: "Clé API OpenAI / ChatGPT (payante)", placeholder: "sk-…", help: <>Créée sur <a className="text-accent hover:underline" href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">platform.openai.com</a> ; facturée à l'usage (crédit prépayé). Sert aussi aux embeddings.</> },
       { name: "VOYAGE_API_KEY", label: "Clé API Voyage (optionnelle)", placeholder: "pa-…", help: <>Embeddings recommandés pour le Second Brain (recherche par le sens).</> },
     ],
@@ -67,6 +70,7 @@ export function ConfigSection() {
               <p className="t-meta mt-2">Active aussi les API Gmail, Google Calendar et Google Drive dans la bibliothèque d'API du projet.</p>
             </div>
           )}
+          {g.title === "Intelligence artificielle" && <RoutesTable routes={data.routes} />}
           <div className="flex flex-col divide-y divide-line-soft">
             {g.keys.map((k) => (
               <SecretRow key={k.name} name={k.name} label={k.label} placeholder={k.placeholder} help={k.help} state={data.secrets[k.name]} />
@@ -78,6 +82,36 @@ export function ConfigSection() {
   );
 }
 
+/** Quelle IA répond pour chaque fonction, et dans quel ordre elles prennent le relais. */
+function RoutesTable({ routes }: { routes: Route[] }) {
+  return (
+    <div className="mb-4 rounded-[12px] border border-line bg-bg p-3">
+      <p className="text-[12.5px] font-medium">Choix automatique de l'IA selon la fonction</p>
+      <ul className="mt-2 flex flex-col gap-2.5">
+        {routes.map((r) => (
+          <li key={r.task} className="text-[12.5px]">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-medium">{r.label}</span>
+              {r.active ? <Badge tone="success">{r.chain.find((c) => c.provider === r.active)?.label}</Badge> : <Badge tone="danger">Aucune clé</Badge>}
+            </div>
+            <p className="t-meta mt-0.5">{r.description}</p>
+            <p className="t-meta mt-0.5">
+              Ordre :{" "}
+              {r.chain.map((c, i) => (
+                <span key={c.provider} className={cn(!c.configured && "line-through opacity-60")}>
+                  {i ? " → " : ""}
+                  {c.label}
+                </span>
+              ))}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p className="t-meta mt-2">Barré = pas de clé. Si une IA est à court de quota, saturée ou trop lente, la suivante répond à sa place.</p>
+    </div>
+  );
+}
+
 function SecretRow({ name, label, placeholder, help, state }: { name: SecretName; label: string; placeholder: string; help: React.ReactNode; state: Config["secrets"][SecretName] }) {
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
@@ -86,6 +120,7 @@ function SecretRow({ name, label, placeholder, help, state }: { name: SecretName
   const { toast } = useToast();
   const refresh = (secrets: Config["secrets"]) => {
     qc.setQueryData<Config>(["config"], (c) => (c ? { ...c, secrets } : c));
+    qc.invalidateQueries({ queryKey: ["config"] });
     ["status", "integrations", "me"].forEach((q) => qc.invalidateQueries({ queryKey: [q] }));
   };
   const save = async () => {
