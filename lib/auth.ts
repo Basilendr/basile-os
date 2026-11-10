@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { and, eq, gt } from "drizzle-orm";
 import { getDb, schema } from "./db";
@@ -41,8 +42,11 @@ export async function destroySession() {
   jar.delete(SESSION_COOKIE);
 }
 
-/** Utilisateur courant, ou null. Vérifie l'expiration et prolonge l'activité. */
-export async function currentUser(): Promise<SessionUser | null> {
+/**
+ * Utilisateur courant, ou null. Vérifie l'expiration et prolonge l'activité.
+ * Mis en cache pour la durée d'un rendu : les deux layouts et la page ne font qu'une requête.
+ */
+export const currentUser = cache(async function currentUser(): Promise<SessionUser | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const db = await getDb();
@@ -64,7 +68,7 @@ export async function currentUser(): Promise<SessionUser | null> {
     await db.update(schema.sessions).set({ lastSeenAt: new Date() }).where(eq(schema.sessions.id, sid));
   }
   return { id: row.id, email: row.email, displayName: row.displayName ?? "Basile", sessionId: sid };
-}
+});
 
 export function clientIp(h: Headers) {
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null;
