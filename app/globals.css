@@ -1,0 +1,583 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   BASILE OS — système de conception
+   Les couleurs sont des jetons : les composants n'utilisent jamais de
+   valeurs brutes, ce qui garantit la cohérence clair / sombre.
+------------------------------------------------------------------ */
+
+/* Thème clair par défaut — blanc, sobre, contrasté. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f4f6;
+  --bg-2: #f4f4f6;
+  --card: #ffffff;
+  --raised: #f1f1f4;
+  --line: #e4e4e8;
+  --line-soft: #ececf0;
+  --fg: #1d1d1f;
+  --fg-2: #515156;
+  --fg-3: #86868b;
+  --accent: #0071e3;
+  --accent-2: #1d1d1f;
+  --accent-fg: #ffffff;
+  --primary: #1d1d1f;
+  --primary-fg: #ffffff;
+  --success: #1f9d55;
+  --warning: #b86e00;
+  --danger: #d70015;
+  --seg-active: #ffffff;
+  --orb-tail: #9aa5b4;
+  --tone-blue: #0a7aff;
+  --tone-green: #22a55a;
+  --tone-violet: #9b5cf6;
+  --tone-orange: #f5850b;
+  --chart-1: #0071e3;
+  --chart-2: #34c759;
+  --chart-3: #ff9f0a;
+  --chart-4: #af52de;
+  --scrim: rgb(29 29 31 / 0.22);
+  --glass: rgb(255 255 255 / 0.78);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 14px -6px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.04), 0 24px 56px -12px rgb(0 0 0 / 0.18);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --bg-2: #0a0a0a;
+  --card: #141414;
+  --raised: #1f1f1f;
+  --line: #262626;
+  --line-soft: #1c1c1c;
+  --fg: #f5f5f7;
+  --fg-2: #a1a1a6;
+  --fg-3: #6e6e73;
+  --accent: #3b82f6;
+  --accent-2: #f5f5f7;
+  --accent-fg: #ffffff;
+  --primary: #f5f5f7;
+  --primary-fg: #1d1d1f;
+  --success: #30d158;
+  --warning: #ffb340;
+  --danger: #ff453a;
+  --seg-active: #2c2c2e;
+  --orb-tail: #e5e7eb;
+  --tone-blue: #3b9bff;
+  --tone-green: #34d17a;
+  --tone-violet: #b48cff;
+  --tone-orange: #ffa53a;
+  --chart-1: #0a84ff;
+  --chart-2: #30d158;
+  --chart-3: #ff9f0a;
+  --chart-4: #bf5af2;
+  --scrim: rgb(0 0 0 / 0.5);
+  --glass: rgb(17 17 19 / 0.78);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px -8px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 24px 64px -16px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-card: var(--card);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-fg: var(--accent-fg);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-geist-sans), "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+/* Densité de l'interface */
+:root {
+  --row-h: 36px;
+  --pad: 20px;
+}
+[data-density="compact"] {
+  --row-h: 30px;
+  --pad: 14px;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   Hiérarchie typographique — tracking négatif sur les grands corps,
+   légèrement positif sur les petits libellés.
+------------------------------------------------------------------ */
+@utility t-display {
+  font-size: clamp(1.75rem, 2.6vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  font-weight: 650;
+}
+@utility t-title {
+  font-size: 1.375rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+}
+@utility t-section {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  letter-spacing: -0.008em;
+  font-weight: 600;
+}
+@utility t-sub {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--fg-2);
+}
+@utility t-meta {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--fg-3);
+  letter-spacing: 0.005em;
+}
+@utility t-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+@utility t-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+@utility t-system {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-3);
+}
+
+/* Surfaces */
+@utility surface {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+@utility glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 4px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+}
+
+/* Barres de défilement discrètes */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Éditeur de notes (TipTap) */
+.prose-os {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg);
+}
+.prose-os:focus {
+  outline: none;
+}
+.prose-os h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 1.2em 0 0.4em;
+  line-height: 1.2;
+}
+.prose-os h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 1.1em 0 0.3em;
+}
+.prose-os h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1em 0 0.2em;
+}
+.prose-os p {
+  margin: 0.35em 0;
+}
+.prose-os ul,
+.prose-os ol {
+  padding-left: 1.4em;
+  margin: 0.4em 0;
+}
+.prose-os ul {
+  list-style: disc;
+}
+.prose-os ol {
+  list-style: decimal;
+}
+.prose-os ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.prose-os ul[data-type="taskList"] li {
+  display: flex;
+  gap: 0.5em;
+  align-items: flex-start;
+}
+.prose-os ul[data-type="taskList"] li > label {
+  margin-top: 0.3em;
+}
+.prose-os ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--fg-3);
+  text-decoration: line-through;
+}
+.prose-os a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-os code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
+}
+.prose-os pre {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.9em 1em;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+.prose-os pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.prose-os blockquote {
+  border-left: 2px solid var(--line);
+  padding-left: 1em;
+  color: var(--fg-2);
+}
+.prose-os table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.6em 0;
+  table-layout: fixed;
+}
+.prose-os td,
+.prose-os th {
+  border: 1px solid var(--line);
+  padding: 0.4em 0.6em;
+  vertical-align: top;
+}
+.prose-os th {
+  background: var(--raised);
+  font-weight: 600;
+  text-align: left;
+}
+.prose-os img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+.prose-os hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 1.2em 0;
+}
+.prose-os p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--fg-3);
+  float: left;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Rendu Markdown des réponses IA */
+.md {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.md > * + * {
+  margin-top: 0.6em;
+}
+.md h1,
+.md h2,
+.md h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 1em;
+}
+.md h1 {
+  font-size: 1.15rem;
+}
+.md h2 {
+  font-size: 1.05rem;
+}
+.md h3 {
+  font-size: 0.95rem;
+}
+.md ul {
+  list-style: disc;
+  padding-left: 1.3em;
+}
+.md ol {
+  list-style: decimal;
+  padding-left: 1.3em;
+}
+.md li + li {
+  margin-top: 0.2em;
+}
+.md code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--raised);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.md pre {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.8em 1em;
+  overflow-x: auto;
+}
+.md pre code {
+  background: none;
+  padding: 0;
+}
+.md a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.md table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.md th,
+.md td {
+  border: 1px solid var(--line);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.md strong {
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--bg-2);
+    backdrop-filter: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+@utility skeleton {
+  background: linear-gradient(90deg, var(--raised) 0%, var(--line-soft) 50%, var(--raised) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Orbe animée de l'assistant (rotation lente, désactivée si mouvement réduit) */
+@keyframes orb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility rise-in {
+  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ------------------------------------------------------------------
+   Ciel de l'accueil : la carte prend la couleur du moment réel
+   (aube, jour, crépuscule, nuit) et de la météo réelle.
+------------------------------------------------------------------ */
+.sky {
+  --sky-fg: var(--fg);
+  --sky-fg-2: var(--fg-2);
+  --sky-glass: rgb(255 255 255 / 0.55);
+  --sky-line: rgb(0 0 0 / 0.06);
+  background: var(--sky-bg);
+}
+.sky-day {
+  --sky-bg: radial-gradient(120% 90% at 92% -10%, rgb(255 214 120 / 0.55), transparent 50%), linear-gradient(168deg, #cbe5ff 0%, #e6f2ff 46%, #ffffff 100%);
+}
+.sky-day.sky-grey {
+  --sky-bg: radial-gradient(110% 80% at 90% -20%, rgb(255 255 255 / 0.9), transparent 55%), linear-gradient(168deg, #d9e0e9 0%, #e9edf2 50%, #fbfcfd 100%);
+}
+.sky-dawn {
+  --sky-bg: radial-gradient(120% 90% at 85% 10%, rgb(255 190 140 / 0.6), transparent 55%), linear-gradient(168deg, #ffd8c4 0%, #ffece0 45%, #f3efff 100%);
+}
+.sky-dusk {
+  --sky-fg: #ffffff;
+  --sky-fg-2: rgb(255 255 255 / 0.8);
+  --sky-glass: rgb(255 255 255 / 0.16);
+  --sky-line: rgb(255 255 255 / 0.18);
+  --sky-bg: radial-gradient(120% 90% at 88% 0%, rgb(255 200 120 / 0.55), transparent 50%), linear-gradient(168deg, #ff9f7a 0%, #e9789a 46%, #7a6bd0 100%);
+}
+.sky-night {
+  --sky-fg: #ffffff;
+  --sky-fg-2: rgb(255 255 255 / 0.72);
+  --sky-glass: rgb(255 255 255 / 0.08);
+  --sky-line: rgb(255 255 255 / 0.12);
+  --sky-bg: radial-gradient(90% 70% at 85% -10%, rgb(120 140 255 / 0.35), transparent 55%), linear-gradient(168deg, #0d1433 0%, #182356 55%, #2a3478 100%);
+}
+[data-theme="dark"] .sky {
+  --sky-fg: #ffffff;
+  --sky-fg-2: rgb(255 255 255 / 0.72);
+  --sky-glass: rgb(255 255 255 / 0.07);
+  --sky-line: rgb(255 255 255 / 0.1);
+}
+[data-theme="dark"] .sky-day {
+  --sky-bg: radial-gradient(100% 90% at 92% -10%, rgb(255 196 90 / 0.2), transparent 50%), linear-gradient(168deg, #16324f 0%, #122236 50%, #141414 100%);
+}
+[data-theme="dark"] .sky-day.sky-grey {
+  --sky-bg: radial-gradient(100% 80% at 90% -20%, rgb(255 255 255 / 0.08), transparent 55%), linear-gradient(168deg, #252b33 0%, #1a1d22 55%, #141414 100%);
+}
+[data-theme="dark"] .sky-dawn {
+  --sky-bg: radial-gradient(100% 90% at 85% 0%, rgb(255 150 110 / 0.25), transparent 55%), linear-gradient(168deg, #3b2633 0%, #221b28 55%, #141414 100%);
+}
+[data-theme="dark"] .sky-dusk {
+  --sky-bg: radial-gradient(100% 90% at 88% 0%, rgb(255 140 120 / 0.3), transparent 50%), linear-gradient(168deg, #4b2238 0%, #2b1d3c 55%, #141414 100%);
+}
+[data-theme="dark"] .sky-night {
+  --sky-bg: radial-gradient(90% 70% at 85% -10%, rgb(110 130 255 / 0.22), transparent 55%), linear-gradient(168deg, #0b1129 0%, #101731 55%, #141414 100%);
+}
+.sky-stars {
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgb(255 255 255 / 0.9), transparent 60%),
+    radial-gradient(1px 1px at 28% 68%, rgb(255 255 255 / 0.7), transparent 60%),
+    radial-gradient(1.4px 1.4px at 47% 18%, rgb(255 255 255 / 0.85), transparent 60%),
+    radial-gradient(1px 1px at 63% 52%, rgb(255 255 255 / 0.6), transparent 60%),
+    radial-gradient(1.3px 1.3px at 78% 30%, rgb(255 255 255 / 0.8), transparent 60%),
+    radial-gradient(1px 1px at 88% 74%, rgb(255 255 255 / 0.6), transparent 60%),
+    radial-gradient(1.1px 1.1px at 36% 40%, rgb(255 255 255 / 0.55), transparent 60%),
+    radial-gradient(1px 1px at 56% 86%, rgb(255 255 255 / 0.5), transparent 60%);
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+.sky-rain {
+  background-image: repeating-linear-gradient(105deg, transparent 0 14px, rgb(120 150 190 / 0.18) 14px 15px);
+  background-size: 200% 200%;
+  animation: rain 1.4s linear infinite;
+}
+[data-theme="dark"] .sky-rain,
+.sky-night .sky-rain,
+.sky-dusk .sky-rain {
+  background-image: repeating-linear-gradient(105deg, transparent 0 14px, rgb(255 255 255 / 0.09) 14px 15px);
+}
+.sky-cloud {
+  position: absolute;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.75);
+  filter: blur(18px);
+  animation: drift 38s ease-in-out infinite alternate;
+}
+[data-theme="dark"] .sky-cloud,
+.sky-night .sky-cloud {
+  background: rgb(255 255 255 / 0.06);
+}
+@keyframes twinkle {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+@keyframes rain {
+  to { background-position: -60px 120px; }
+}
+@keyframes drift {
+  from { transform: translateX(-6%); }
+  to { transform: translateX(8%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-stars, .sky-rain, .sky-cloud { animation: none; }
+}
