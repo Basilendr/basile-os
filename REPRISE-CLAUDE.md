@@ -132,6 +132,11 @@ Aucune clé API ni aucun mot de passe ne figure dans ce dossier.
 - **10 nov. (suite)** :
   - Emploi du temps : l'onglet affiche tel quel le PDF de M. Casaux pour la semaine (`services/school/documents.ts`, table `school_documents` qui garde le fichier, route `/api/school/timetable/document?file=`). Bouton « Grille » pour l'ancienne vue.
   - IA : Groq et Mistral ajoutés (`GROQ_API_KEY`, `MISTRAL_API_KEY`). Choix automatique par fonction dans `services/ai/provider.ts` (`TASK_ROUTES`, `routeFor`, `routed`) : assistant, textes courts, quiz, lecture de PDF ; passage à l'IA suivante si quota, surcharge ou lenteur. Tableau explicatif dans Paramètres → Configuration.
-  - Écran « Aujourd'hui » sur `/` (`components/today/today-view.tsx`, `/api/today`, `services/today.ts`) ; l'ancienne vue d'ensemble est sur `/overview`.
+  - Écran « Aujourd'hui » sur `/today` (`components/today/today-view.tsx`, `/api/today`, `services/today.ts`) ; l'accueil d'origine (vue d'ensemble) est revenu sur `/` à la demande de Basile.
   - Graphique d'évolution des notes et alerte « en baisse » (`components/school/grade-trend.tsx`) dans École → Évaluations.
   - Instance d'aperçu isolée : `DATABASE_URL= DATABASE_URL_UNPOOLED= sh scripts/preview.sh` (port 3101, base embarquée), compte créé via `/api/auth/setup`.
+- **10 nov. (soir)** :
+  - Version téléphone (iPhone, app installée depuis Safari → « Sur l'écran d'accueil ») : barre d'onglets Accueil / Aujourd'hui / Assistant / Messages / Plus, marges d'encoche (`env(safe-area-inset-*)`), pas de zoom iOS sur les champs (16 px), pas de fil d'Ariane sur téléphone.
+  - Notifications push : `public/sw.js`, `lib/client/push.ts`, `/api/push`, `services/push.ts` (clés VAPID créées automatiquement, gardées chiffrées dans `instance_secrets` sous `VAPID_KEYS`), table `push_subscriptions` (migration 0010). Envoyées par `notify()` seulement pour les quiz prêts (type `quiz`, importance `high`) et le rappel de 18 h des devoirs du lendemain (`services/school/reminder.ts`, tâche `homework-evening`). Activation : Paramètres → Général → « Application sur le téléphone ».
+  - Les tâches périodiques ne tournent sur Vercel qu'après une visite du site ou via le cron quotidien ; le serveur du Mac les fait tourner en continu.
+  - Code sauvegardé sur GitHub : `https://github.com/Basilendr/basile-os` (remote `origin`).
