@@ -178,6 +178,17 @@ registerJob({
   },
 });
 
+// Rappel du soir (18 h, heure locale) : devoirs pas encore cochés pour le prochain jour de cours.
+registerJob({
+  name: "homework-evening",
+  everyMs: 10 * 60_000,
+  async run(db) {
+    const { homeworkReminder } = await import("./school/reminder");
+    const rows = await db.select({ userId: schema.schoolAccounts.userId }).from(schema.schoolAccounts);
+    for (const r of rows) await homeworkReminder(db, r.userId).catch((e) => log.warn("homework.reminder_failed", { error: String(e) }));
+  },
+});
+
 // Quiz de révision : cours du jour le soir, bilan le week-end, étapes avant les évaluations.
 registerJob({
   name: "quiz-schedule",

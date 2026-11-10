@@ -582,12 +582,33 @@ body {
   .sky-stars, .sky-rain, .sky-cloud { animation: none; }
 }
 
-/* Application installée sur iPhone/iPad : contenu hors de l'encoche et de la barre d'accueil. */
-@supports (padding: env(safe-area-inset-top)) {
+/* Application installée sur iPhone/iPad : la barre du haut et la barre d'onglets s'écartent elles-mêmes
+   de l'encoche et de la barre d'accueil ; ici seulement les bords en mode paysage. */
+@supports (padding: env(safe-area-inset-left)) {
   body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Téléphone : comportement d'application (pas de zoom sur les champs, pas de rebond ni de surlignage au toucher). */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+@media (max-width: 767px) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  /* iOS zoome sur un champ dont le texte fait moins de 16 px. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  button,
+  a {
+    -webkit-touch-callout: none;
   }
 }

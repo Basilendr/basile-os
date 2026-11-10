@@ -47,12 +47,12 @@ export function CommandCenter() {
         )}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0">
           <Composer onSend={(t) => (chat.send(t), setSeed(null))} busy={chat.busy} onStop={chat.stop} seed={seed} placeholder="Ex. « Prépare ma journée de demain » ou « Trouve un créneau de 2 h demain après-midi »" autoFocus />
           {!status?.ai.configured && status && (
             <p className="mt-2 rounded-[9px] border border-warning/30 bg-warning/10 px-3 py-2 text-[12.5px] text-warning">
-              IA non configurée : colle ta clé Anthropic dans <a className="underline" href="/settings?s=config">Paramètres → Configuration</a>. Le planificateur ci-dessous fonctionne déjà sans IA.
+              IA non configurée : colle une clé IA (Gemini ou Groq, gratuites) dans <a className="underline" href="/settings?s=config">Paramètres → Configuration</a>. Le planificateur ci-dessous fonctionne déjà sans IA.
             </p>
           )}
           {chat.messages.length === 0 ? (

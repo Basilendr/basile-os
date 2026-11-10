@@ -1186,3 +1186,18 @@ export const schoolDocuments = pgTable(
   },
   (t) => [uniqueIndex("school_documents_uq").on(t.userId, t.fileId)],
 );
+
+/** Abonnements aux notifications push (iPhone : app installée sur l'écran d'accueil). */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: id(),
+    userId: owner(),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    device: text("device"),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("push_subscriptions_endpoint_uq").on(t.endpoint)],
+);

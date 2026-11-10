@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "Système d'exploitation personnel augmenté par l'IA",
   applicationName: "Basile OS",
   icons: { icon: "/api/pwa-icon/192", apple: "/api/pwa-icon/180" },
-  appleWebApp: { capable: true, title: "Basile OS", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Basile OS", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
 };
 

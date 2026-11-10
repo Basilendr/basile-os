@@ -13,6 +13,8 @@ export function proxy(req: NextRequest) {
   }
   const has = req.cookies.has("bos_session");
   const { pathname, search } = req.nextUrl;
+  // Le service worker (notifications) doit rester accessible sans session.
+  if (pathname === "/sw.js") return NextResponse.next();
   if (!has && pathname !== "/login") {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
@@ -23,5 +25,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|.*\\.(?:png|jpg|svg|webp|ico)$).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|sw.js|.*\\.(?:png|jpg|svg|webp|ico)$).*)"],
 };

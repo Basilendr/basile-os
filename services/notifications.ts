@@ -14,6 +14,7 @@ export type NotificationType =
   | "automation"
   | "integration_error"
   | "quiz"
+  | "homework"
   | "system";
 
 export type NotifyInput = {
@@ -40,7 +41,13 @@ export async function notify(db: DB, userId: string, n: NotifyInput) {
     .values({ userId, body: "", importance: "normal", ...n })
     .onConflictDoNothing()
     .returning();
-  return rows[0] ?? null;
+  const row = rows[0] ?? null;
+  // Sur le téléphone : seulement les quiz prêts et le rappel des devoirs du lendemain.
+  if (row && ((n.type === "quiz" && n.importance === "high") || n.type === "homework")) {
+    const { sendPush } = await import("./push");
+    await sendPush(db, userId, { title: n.title, body: n.body, href: n.href, tag: n.dedupeKey }).catch(() => 0);
+  }
+  return row;
 }
 
 export async function listNotifications(db: DB, userId: string, opts: { unreadOnly?: boolean; type?: string; limit?: number }) {

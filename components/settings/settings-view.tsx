@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { User, Palette, Lightbulb, Plug, Lock, ShieldCheck, Trash2, Download, Plus, Pencil, Monitor, KeyRound } from "lucide-react";
 import { ConfigSection, WeatherSection } from "./config-section";
+import { PhoneSection } from "./phone-section";
 import { api } from "@/lib/client/api";
 import { MEMORY_CATEGORIES, TOOLS, ALWAYS_CONFIRM, AI_MODELS, defaultToolPolicy, type ToolName } from "@/lib/catalog";
 import { cn, relativeTime } from "@/lib/utils";
@@ -53,6 +54,7 @@ export function SettingsView() {
           {!me ? null : section === "general" ? (
             <>
               <General me={me} />
+              <PhoneSection />
               <WeatherSection />
             </>
           ) : section === "config" ? (
@@ -110,7 +112,13 @@ function Section({ title, description, children }: { title: string; description?
 function General({ me }: { me: Me }) {
   const save = usePatch("/api/profile");
   const [v, setV] = useState(me.profile);
-  const tzs = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [me.profile.timezone];
+  // La liste des fuseaux du navigateur diffère de celle du serveur : remplie après l'affichage (sinon erreur d'hydratation).
+  const [tzs, setTzs] = useState<string[]>([me.profile.timezone]);
+  useEffect(() => {
+    if (typeof Intl.supportedValuesOf !== "function") return;
+    const list = Intl.supportedValuesOf("timeZone");
+    setTzs(list.includes(me.profile.timezone) ? list : [me.profile.timezone, ...list]);
+  }, [me.profile.timezone]);
   return (
     <Section title="Profil" description={`Compte : ${me.email}`}>
       <div className="grid gap-3.5 sm:grid-cols-2">

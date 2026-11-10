@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarRange, Check, ChevronDown, Download, LayoutGrid, Replace } from "lucide-react";
+import Link from "next/link";
+import { CalendarRange, Check, ChevronDown, Download, LayoutGrid, Replace, Sun } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { addDays, cn, isoDate, startOfDay } from "@/lib/utils";
 import { WIDGETS, WIDGET_SLOTS, type WidgetKey } from "@/lib/catalog";
@@ -93,10 +94,15 @@ export function Overview() {
     <div className="@container mx-auto h-full w-full max-w-[1600px]">
     <div className="flex min-h-full flex-col px-1 pt-1 pb-3 md:px-3 md:pt-2 @min-[940px]:h-full">
       <PageHeader
-        title="Vue d'ensemble"
+        title="Accueil"
         description="Ta journée, tes priorités et ton activité en un coup d'œil."
         actions={
           <>
+            <Link href="/today">
+              <Button size="sm" variant="primary" icon={<Sun className="size-3.5" />}>
+                Aujourd'hui
+              </Button>
+            </Link>
             <Menu
               align="end"
               trigger={({ toggle }) => (
@@ -107,12 +113,14 @@ export function Overview() {
               )}
               items={PERIODS.map((p) => ({ label: p.label, icon: p.days === days ? <Check /> : <span />, onSelect: () => pickDays(p.days) }))}
             />
+            <span className="hidden md:contents">
             <Button size="sm" icon={<Download className="size-3.5" />} disabled={!data} onClick={() => data && exportCsv(data, period.label)}>
               Exporter
             </Button>
             <Button variant={editing ? "primary" : "secondary"} size="sm" icon={editing ? <Check className="size-3.5" /> : <LayoutGrid className="size-3.5" />} onClick={() => setEditing((e) => !e)}>
               {editing ? "Terminer" : "Personnaliser"}
             </Button>
+            </span>
           </>
         }
       />

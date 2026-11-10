@@ -58,7 +58,7 @@ export function AnalyticsView() {
               </Card>
             ))}
           </div>
-          <div className="grid gap-4 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 [&>*]:min-w-0">
             <Card className="lg:col-span-8">
               <CardHeader title="Évolution de la productivité" subtitle="Tâches créées et terminées" />
               <div className="px-4 pb-4">

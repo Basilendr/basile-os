@@ -71,6 +71,13 @@
       "when": 1794318256667,
       "tag": "0009_school_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794332051108,
+      "tag": "0010_push_subscriptions",
+      "breakpoints": true
     }
   ]
 }

@@ -119,8 +119,9 @@ export function PageHeader({ title, description, actions, children, crumbs }: { 
   const folder = FOLDERS.find((f) => f.items.some((i) => isActive(pathname, i.href)));
   const trail = crumbs ?? (folder && folder.label !== title ? [{ label: folder.label }] : []);
   return (
-    <div className="mb-5 flex flex-col gap-3">
-      <nav className="flex items-center gap-1.5 text-[12.5px] text-fg-3" aria-label="Fil d'Ariane">
+    <div className="mb-4 flex flex-col gap-3 md:mb-5">
+      {/* Sur téléphone, la barre d'onglets suffit : pas de fil d'Ariane. */}
+      <nav className="hidden items-center gap-1.5 text-[12.5px] text-fg-3 md:flex" aria-label="Fil d'Ariane">
         <Link href="/" className="hover:text-fg" aria-label="Accueil">
           <Home className="size-3.5" />
         </Link>
@@ -144,7 +145,7 @@ export function PageHeader({ title, description, actions, children, crumbs }: { 
           <h1 className="t-title">{title}</h1>
           {description && <p className="t-sub mt-1">{description}</p>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
     </div>

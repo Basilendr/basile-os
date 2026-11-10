@@ -61,8 +61,8 @@ export function TodayView() {
         title={`${hello}${first ? ` ${first}` : ""}`}
         description={data ? day(data.date).replace(/^./, (c) => c.toUpperCase()) : "Ta journée en un coup d'œil."}
         actions={
-          <Link href="/overview">
-            <Button size="sm">Vue d'ensemble</Button>
+          <Link href="/" className="hidden md:block">
+            <Button size="sm">Accueil</Button>
           </Link>
         }
       />
@@ -71,7 +71,7 @@ export function TodayView() {
       ) : !data ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className={cn("min-h-[220px] rounded-[20px]", i === 0 && "xl:row-span-2")} />
+            <Skeleton key={i} className={cn("min-h-[160px] md:min-h-[220px] rounded-[20px]", i === 0 && "xl:row-span-2")} />
           ))}
         </div>
       ) : (
@@ -96,7 +96,7 @@ function Lessons({ data, className }: { data: Today; className?: string }) {
   const left = lessons.filter((l) => !l.cancelled && new Date(l.endAt).getTime() > now).length;
   return (
     <WidgetCard
-      className={cn("min-h-[260px]", className)}
+      className={cn("md:min-h-[260px]", className)}
       title="Cours du jour"
       subtitle={off ? off.title : lessons.length ? (left ? `${left} cours restant${left > 1 ? "s" : ""}` : "Journée de cours terminée") : "Pas de cours aujourd'hui"}
       action={
@@ -191,7 +191,7 @@ function Homework({ data }: { data: Today }) {
   const nothing = !s.homeworkToday.length && !s.homeworkNext.length && !s.homeworkLater.length && !s.tests.length;
   return (
     <WidgetCard
-      className="min-h-[220px]"
+      className="md:min-h-[220px]"
       title={`Devoirs pour ${nextLabel}`}
       subtitle={s.homeworkNext.length ? `${s.homeworkNext.filter((h) => !h.done).length} à faire sur ${s.homeworkNext.length}` : "Rien à rendre"}
       action={
@@ -255,7 +255,7 @@ function QuizCard({ data }: { data: Today }) {
   const waiting = q?.state === "waiting";
   return (
     <WidgetCard
-      className="min-h-[200px]"
+      className="md:min-h-[200px]"
       title="Quiz du jour"
       subtitle={!q ? "Indisponible" : q.streak > 0 ? `Série : ${q.streak} jour${q.streak > 1 ? "s" : ""}` : waiting ? `Prêt vers ${q.slotHour} h` : undefined}
       action={
@@ -304,7 +304,7 @@ function FocusCard({ data }: { data: Today }) {
   const subject = data.school.lessons.find((l) => !l.cancelled && new Date(l.endAt).getTime() > Date.now())?.subject ?? data.school.homeworkNext[0]?.subject;
   return (
     <WidgetCard
-      className="min-h-[200px]"
+      className="md:min-h-[200px]"
       title="Pomodoro"
       subtitle={data.focus ? `${data.focus.todayMinutes} min de travail aujourd'hui${data.focus.streak > 1 ? ` · ${data.focus.streak} jours d'affilée` : ""}` : undefined}
       action={
@@ -356,7 +356,7 @@ function Agenda({ data }: { data: Today }) {
   const empty = !data.tasks.length && !data.events.length;
   return (
     <WidgetCard
-      className="min-h-[200px]"
+      className="md:min-h-[200px]"
       title="Tâches et rendez-vous"
       subtitle={empty ? "Rien de prévu" : `${data.events.length} rendez-vous · ${data.tasks.length} tâche${data.tasks.length > 1 ? "s" : ""}`}
       action={

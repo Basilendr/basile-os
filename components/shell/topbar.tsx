@@ -36,10 +36,10 @@ export function Topbar() {
 
   const circle = "focus-ring relative grid size-9 place-items-center rounded-full border border-line bg-bg/60 text-fg-2 transition-colors hover:bg-raised hover:text-fg";
   return (
-    <header className="z-40 shrink-0 px-2 pt-2 md:px-3 md:pt-3">
+    <header className="z-40 shrink-0 px-2 pt-[max(0.5rem,env(safe-area-inset-top))] md:px-3 md:pt-3">
       <div className="flex h-14 items-center gap-2 rounded-[20px] border border-line bg-card px-2.5 shadow-[var(--shadow-sm)]">
       <button
-        className="focus-ring grid size-9 place-items-center rounded-[11px] border border-line bg-bg/60 text-fg-2 transition-colors hover:bg-raised hover:text-fg"
+        className="focus-ring hidden size-9 place-items-center rounded-[11px] border border-line bg-bg/60 text-fg-2 transition-colors hover:bg-raised hover:text-fg md:grid"
         onClick={() => (window.matchMedia("(min-width: 768px)").matches ? toggleSidebar() : setMobileNavOpen(true))}
         aria-label="Menu"
       >
@@ -47,7 +47,7 @@ export function Topbar() {
       </button>
       <Link href="/" className="focus-ring flex shrink-0 items-center gap-2.5 rounded-[8px] pl-1">
         <LogoMark size={26} />
-        <span className="hidden text-[15px] font-semibold tracking-[-0.02em] sm:inline">Basile OS</span>
+        <span className="text-[15px] font-semibold tracking-[-0.02em] max-[359px]:hidden md:max-lg:hidden">Basile OS</span>
       </Link>
 
       <div className="ml-auto flex min-w-0 items-center gap-2">
