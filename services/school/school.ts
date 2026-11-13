@@ -33,7 +33,9 @@ export function publicAccount(a: Account | null) {
     schoolName: a.schoolName,
     schoolYear: a.schoolYear,
     lastSyncAt: a.lastSyncAt,
-    lastError: a.lastError,
+    // Un compte « en erreur » est presque toujours une session expirée pendant que le Mac était éteint :
+    // École Directe refuse les reconnexions venues d'un serveur hébergé, seul le Mac peut la rétablir.
+    lastError: a.status === "error" ? "La session École Directe a expiré pendant que Basile OS ne tournait pas sur ton Mac. Elle se rétablit toute seule dès que le Mac est allumé avec Basile OS lancé ; si ce n'est pas le cas, reconnecte-toi depuis le Mac." : a.lastError,
     qcm: a.status === "qcm_required" && a.pendingQcm ? { question: a.pendingQcm.question, propositions: a.pendingQcm.propositions.map((p, i) => ({ index: i, label: Buffer.from(p, "base64").toString("utf8") })) } : null,
   };
 }

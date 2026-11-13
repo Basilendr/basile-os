@@ -260,14 +260,14 @@ describe("passer un quiz", () => {
 });
 
 describe("quiz programmés", () => {
-  it("prépare le quiz du jour depuis Drive, sans doublon, et les révisions avant une évaluation", { timeout: 60_000 }, async () => {
+  it("demande sur quel document faire le quiz du jour, puis prépare les révisions avant une évaluation", { timeout: 60_000 }, async () => {
     const { schema } = await import("@/lib/db");
     const { and, eq } = await import("drizzle-orm");
     const { buildAuthUrl, handleCallback } = await import("@/services/google/oauth");
     const { checkUser } = await import("@/services/quiz/schedule");
-    const { getQuiz, overview, scheduledQuiz, setEvalSources, userTz } = await import("@/services/quiz/quiz");
+    const { chooseDaily, getQuiz, overview, runGeneration, scheduledQuiz, setEvalSources, todayDocs, userTz } = await import("@/services/quiz/quiz");
     const { addHomework } = await import("@/services/school/school");
-    const { isWeekend, localNow, shiftDate } = await import("@/services/quiz/time");
+    const { localNow, shiftDate } = await import("@/services/quiz/time");
 
     // Sans Drive connecté, rien ne se passe.
     world();
@@ -276,38 +276,49 @@ describe("quiz programmés", () => {
     expect((await handleCallback(db, userId, { code: "ok", state })).connected).toEqual(["drive"]);
 
     const now = localNow(await userTz(db, userId));
-    const weekend = isWeekend(now.weekday);
-    const todays = () => db.select().from(schema.quizzes).where(and(eq(schema.quizzes.userId, userId), eq(schema.quizzes.forDate, now.date), eq(schema.quizzes.kind, weekend ? "weekly" : "daily")));
+    const todays = () => db.select().from(schema.quizzes).where(and(eq(schema.quizzes.userId, userId), eq(schema.quizzes.forDate, now.date), eq(schema.quizzes.kind, "daily")));
+    const asks = () => db.select().from(schema.notifications).where(and(eq(schema.notifications.userId, userId), eq(schema.notifications.dedupeKey, `quiz-choose:${now.date}`)));
 
-    // Aucun cours enregistré aujourd'hui : pas de quiz.
+    // Aucun cours enregistré : ni quiz, ni question.
     world({ files: [] });
     expect((await checkUser(db, userId, { force: true })).created).toBe(0);
-    expect(await todays()).toHaveLength(0);
+    expect(await asks()).toHaveLength(0);
 
-    // Des cours ont été enregistrés : un quiz par matière (dossier, nom ou IA), rédigé et annoncé.
+    // Des cours ont été enregistrés : plus de quiz automatique, une seule question avec les titres des documents.
     let calls = world();
-    expect((await checkUser(db, userId, { force: true })).created).toBeGreaterThanOrEqual(1);
-    const list = await todays();
-    if (weekend) {
-      expect(list).toHaveLength(1);
-      expect(list[0]).toMatchObject({ status: "ready", title: "Bilan de la semaine" });
-    } else {
-      expect(list.map((x) => x.subject).sort()).toEqual(["Anglais", "Histoire-Géo", "SES"]);
-      expect(list.find((x) => x.subject === "Histoire-Géo")).toMatchObject({ status: "ready", title: "La Révolution française", sources: [{ id: "doc1", name: "Cours Révolution" }], keyPoints: QUIZ.keyPoints, dedupeKey: `daily:${now.date}:histoire-geo` });
-      expect(list.find((x) => x.subject === "SES")?.sources).toEqual([{ id: "doc3", name: "Notes du jour" }]);
-    }
-    const quiz = list[0];
-    expect(quiz.questions.filter((q) => !q.review)).toHaveLength(3);
-    const notes = await db.select().from(schema.notifications).where(and(eq(schema.notifications.userId, userId), eq(schema.notifications.type, "quiz")));
-    expect(notes.some((n) => /quiz du soir|week-end|rattrapage/.test(n.title))).toBe(true);
-    expect(JSON.stringify((await getQuiz(db, userId, quiz.id)).questions)).not.toContain("answerIndex");
-
-    // Nouvelle vérification : ni nouveau quiz, ni nouvel appel à l'IA.
-    calls = world();
     expect((await checkUser(db, userId, { force: true })).created).toBe(0);
     expect(calls.ai).toBe(0);
+    expect(await todays()).toHaveLength(0);
+    const [ask] = await asks();
+    expect(ask.title).toMatch(/Sur quoi veux-tu/);
+    expect(ask.body).toContain("Cours Révolution");
+    await checkUser(db, userId, { force: true });
+    expect(await asks()).toHaveLength(1);
+
+    // Liste proposée : chaque document avec sa matière.
+    const { docs } = await todayDocs(db, userId, "today");
+    expect(docs.map((d) => d.name)).toEqual(["Cours Révolution", "Vocabulary unit 3", "Notes du jour"]);
+    expect(docs[0]).toMatchObject({ id: "doc1", subject: "Histoire-Géo", quizzes: 0 });
+
+    // « Oui, un quiz sur ce document, thème 3 » : quiz sur ce seul document, la partie demandée transmise à l'IA.
+    let prompt = "";
+    calls = world();
+    const origFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: string | URL, init?: RequestInit) => {
+      if (String(input).includes("generativelanguage")) prompt += String(init?.body);
+      return origFetch(input, init);
+    });
+    const { id } = await chooseDaily(db, userId, { source: { id: "doc1", name: "Cours Révolution", mimeType: GDOC }, subject: "Histoire-Géo", focus: "thème 3" });
+    const quiz = (await runGeneration(db, userId, id))!;
+    expect(quiz).toMatchObject({ status: "ready", kind: "daily", subject: "Histoire-Géo", sources: [{ id: "doc1", name: "Cours Révolution" }] });
+    expect(quiz.options).toMatchObject({ chosen: true, focus: "thème 3" });
+    expect(prompt).toContain("thème 3");
+    expect(quiz.questions.filter((q) => !q.review)).toHaveLength(3);
+    expect(JSON.stringify((await getQuiz(db, userId, quiz.id)).questions)).not.toContain("answerIndex");
+    expect((await todayDocs(db, userId, "today")).docs[0].quizzes).toBe(1);
 
     // Évaluation dans 3 jours avec ses documents : le quiz J-3 est préparé ; sans document, un rappel est envoyé.
+    world();
     const hw = await addHomework(db, userId, { subject: "Histoire-Géo", title: "Contrôle Révolution", dueDate: shiftDate(now.date, 3), isTest: true, quizSources: [{ id: "doc1", name: "Cours Révolution" }] });
     const bare = await addHomework(db, userId, { subject: "SES", title: "Contrôle marché", dueDate: shiftDate(now.date, 7), isTest: true });
     expect((await checkUser(db, userId, { force: true })).created).toBe(1);
@@ -320,7 +331,8 @@ describe("quiz programmés", () => {
     const e = o.evals.find((x) => x.id === hw.id)!;
     expect(e.daysLeft).toBe(3);
     expect(e.stages.map((s) => [s.stage, s.state])).toEqual([["j7", "missed"], ["j3", "todo"], ["j1", "upcoming"]]);
-    expect(o.today.quizzes.map((x) => x.id)).toContain(quiz.id);
+    expect(o.today.quizzes.map((x) => x.id)).toEqual([quiz.id]);
+    expect(o.today.state).toBe("ready");
 
     // Les documents choisis ensuite déclenchent le quiz de l'étape en cours.
     await setEvalSources(db, userId, bare.id, { sources: [{ id: "doc1", name: "Cours Révolution" }] });

@@ -34,7 +34,7 @@ type QuizData = {
 };
 type AnswerResult = { correct: boolean; feedback?: string; reveal: Reveal; done: boolean; score: number; total: number; answered: number; keyPoints: string[] };
 
-const KIND: Record<string, string> = { daily: "Quiz du soir", weekly: "Bilan de la semaine", eval: "Révision d'évaluation", custom: "Mes documents", review: "Mes erreurs à revoir" };
+const KIND: Record<string, string> = { daily: "Quiz du jour", weekly: "Bilan de la semaine", eval: "Révision d'évaluation", custom: "Mes documents", review: "Mes erreurs à revoir" };
 const STAGE: Record<string, string> = { j7: "J-7", j3: "J-3", j1: "Veille" };
 const LETTERS = ["A", "B", "C", "D", "E"];
 const STEPS = ["Lecture de tes cours dans Google Drive…", "Repérage des notions importantes…", "Rédaction des questions…", "Vérification des réponses…"];

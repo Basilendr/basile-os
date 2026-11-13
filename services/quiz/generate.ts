@@ -137,7 +137,7 @@ export function buildPrompt(i: GenInput) {
     .join("\n\n");
   return [
     brief(i),
-    i.focus ? `Demande de l'élève : ${i.focus.slice(0, 500)}` : "",
+    i.focus ? `Demande de l'élève (prioritaire : interroge seulement cette partie du document, même si le reste est plus récent) : ${i.focus.slice(0, 500)}` : "",
     i.weak?.length ? `Notions sur lesquelles il s'est trompé récemment (reviens dessus avec de nouvelles questions si elles figurent dans ces cours) : ${i.weak.slice(0, 12).join(" ; ")}.` : "",
     i.avoid?.length ? `Questions déjà posées (ne les repose pas : aborde d'autres points ou les mêmes notions sous un autre angle) :\n${i.avoid.slice(0, 40).map((p) => `- ${p}`).join("\n")}` : "",
     i.min && i.min < i.count ? `Nombre de questions : entre ${i.min} et ${i.count}, autant qu'il en faut pour couvrir toutes les notions de la liste.` : `Nombre de questions : exactement ${i.count}.`,

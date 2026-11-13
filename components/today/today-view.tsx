@@ -252,12 +252,11 @@ function Homework({ data }: { data: Today }) {
 
 function QuizCard({ data }: { data: Today }) {
   const q = data.quiz;
-  const waiting = q?.state === "waiting";
   return (
     <WidgetCard
       className="md:min-h-[200px]"
       title="Quiz du jour"
-      subtitle={!q ? "Indisponible" : q.streak > 0 ? `Série : ${q.streak} jour${q.streak > 1 ? "s" : ""}` : waiting ? `Prêt vers ${q.slotHour} h` : undefined}
+      subtitle={!q ? "Indisponible" : q.streak > 0 ? `Série : ${q.streak} jour${q.streak > 1 ? "s" : ""}` : undefined}
       action={
         <Link href="/quiz" className="t-meta hover:text-fg">
           Quiz
@@ -265,10 +264,17 @@ function QuizCard({ data }: { data: Today }) {
       }
     >
       {!q || q.quizzes.length === 0 ? (
-        <p className="t-meta flex items-center gap-2 py-4">
-          <ListChecks className="size-3.5" />
-          {waiting ? `Tes quiz du soir arrivent vers ${q?.slotHour} h, un par matière du jour.` : "Pas de quiz aujourd'hui."}
-        </p>
+        <div className="flex flex-col items-start gap-3 py-2">
+          <p className="t-meta flex items-center gap-2">
+            <ListChecks className="size-3.5 shrink-0" />
+            Choisis le document de ton quiz du jour, et la partie à réviser si tu veux.
+          </p>
+          <Link href="/quiz">
+            <Button size="sm" variant="primary">
+              Choisir mon quiz
+            </Button>
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {q.quizzes.map((x) => (

@@ -88,7 +88,7 @@ export function DrivePicker({
       onClose={onClose}
       size="lg"
       title={title ?? (mode === "folder" ? "Dossier de tes cours" : "Choisir des documents")}
-      description={mode === "folder" ? "Seuls les documents rangés dans ce dossier (et ses sous-dossiers) serviront aux quiz du soir." : `Google Docs, PDF, Word, diaporamas ou photos de cours — ${max} au maximum.`}
+      description={mode === "folder" ? "Seuls les documents rangés dans ce dossier (et ses sous-dossiers) te seront proposés pour le quiz du jour." : `Google Docs, PDF, Word, diaporamas ou photos de cours — ${max} au maximum.`}
       footer={
         mode === "folder" ? (
           <>

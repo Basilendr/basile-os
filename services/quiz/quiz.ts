@@ -146,10 +146,12 @@ export async function runGeneration(db: DB, userId: string, quizId: string): Pro
     try {
       const [tz, settings] = await Promise.all([userTz(db, userId), getSettings(db, userId)]);
       const today = localNow(tz).date;
-      const periodic = quiz.kind === "daily" || quiz.kind === "weekly";
+      // Un quiz choisi par l'élève n'est jamais « vide » en silence : il voit l'erreur.
+      const chosen = !!quiz.options.chosen;
+      const periodic = (quiz.kind === "daily" && !chosen) || quiz.kind === "weekly";
       const files = await filesFor(db, userId, quiz, tz, settings.folderId);
       const loaded = await loadDocs(db, userId, files, today);
-      const docs = loaded.filter((d) => !d.error && d.text.length >= 150 && !(quiz.kind === "daily" && d.minor));
+      const docs = loaded.filter((d) => !d.error && d.text.length >= 150 && !(quiz.kind === "daily" && d.minor && !chosen));
       if (!docs.length) {
         if (periodic) return await finish({ status: "empty", sources: quiz.kind === "daily" ? quiz.sources : [], questions: [] });
         throw new AppError("bad_request", loaded.find((d) => d.error)?.error ?? "Ces documents ne contiennent pas assez de texte pour en faire un quiz.");
@@ -416,6 +418,47 @@ export async function createCustom(db: DB, userId: string, raw: z.input<typeof C
   return { id: created!.id };
 }
 
+/* ---------------------------------------------------------------- quiz du jour choisi par l'élève */
+
+/** Documents enregistrés ou modifiés dans Drive aujourd'hui (ou ces 7 derniers jours), proposés pour le quiz du jour. */
+export async function todayDocs(db: DB, userId: string, range: "today" | "week") {
+  const [tz, settings, drive] = await Promise.all([userTz(db, userId), getSettings(db, userId), isServiceConnected(db, userId, "drive")]);
+  if (!drive) return { drive: false, docs: [] };
+  const now = localNow(tz);
+  const since = zonedMidnight(range === "week" ? shiftDate(now.date, -6) : now.date, tz);
+  const [files, mine] = await Promise.all([
+    modifiedSince(db, userId, since, { folderId: settings.folderId, limit: 30 }),
+    db.select({ sources: q.sources, status: q.status }).from(q).where(and(eq(q.userId, userId), eq(q.forDate, now.date), eq(q.kind, "daily"))),
+  ]);
+  return {
+    drive: true,
+    docs: files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      mimeType: f.mimeType,
+      subject: f.subject ?? null,
+      path: f.path ?? "",
+      modifiedTime: f.modifiedTime ?? null,
+      quizzes: mine.filter((r) => r.status !== "dismissed" && r.sources.some((x) => x.id === f.id)).length,
+    })),
+  };
+}
+
+export const ChooseInput = z.object({
+  source: QuizSourceInput,
+  subject: z.string().trim().max(60).nullable().optional(),
+  focus: z.string().trim().max(300).optional(),
+});
+
+/** « Oui, un quiz sur ce document » (avec, au besoin, la partie à réviser : « thème 3 »). */
+export async function chooseDaily(db: DB, userId: string, raw: z.input<typeof ChooseInput>) {
+  const v = ChooseInput.parse(raw);
+  await requireReady(db, userId);
+  const today = localNow(await userTz(db, userId)).date;
+  const created = await createQuiz(db, userId, { kind: "daily", title: "", subject: v.subject || null, forDate: today, sources: [{ id: v.source.id, name: v.source.name, mimeType: v.source.mimeType }], options: { focus: v.focus || undefined, chosen: true } });
+  return { id: created!.id };
+}
+
 async function requireReady(db: DB, userId: string) {
   if (!(await isServiceConnected(db, userId, "drive"))) throw new AppError("not_configured", "Connecte Google Drive pour créer des quiz à partir de tes cours.");
   if (!(await aiSettings(db, userId)).configured) throw new AppError("not_configured", "L'IA n'est pas configurée : ajoute une clé dans les réglages.");
@@ -521,7 +564,8 @@ export async function overview(db: DB, userId: string) {
 
   // Quiz du jour : un par matière le soir en semaine, le bilan le week-end.
   const weekend = isWeekend(now.weekday);
-  const todayAll = rows.filter((r) => r.forDate === now.date && r.kind === (weekend ? "weekly" : "daily"));
+  // Seuls les quiz choisis par l'élève ; les anciens quiz automatiques restent dans « Mes quiz ».
+  const todayAll = rows.filter((r) => r.forDate === now.date && r.kind === "daily" && r.options.chosen);
   const todayRows = todayAll.filter((r) => !hidden(r)).sort((a, b) => (a.subject ?? "").localeCompare(b.subject ?? ""));
   const reached = slotReached(now.date, now, settings);
   const today = {
@@ -529,7 +573,8 @@ export async function overview(db: DB, userId: string) {
     weekend,
     slotHour: slotHour(now.weekday, settings),
     reached,
-    state: !todayRows.length ? (reached || todayAll.length ? "none" : "waiting") : todayRows.some((r) => r.status === "ready") ? "ready" : todayRows.some((r) => r.status === "generating") ? "generating" : "error",
+    // Plus de quiz automatique : sans quiz choisi, l'élève choisit le document du jour (« choose »).
+    state: !todayRows.length ? "choose" : todayRows.some((r) => r.status === "ready") ? "ready" : todayRows.some((r) => r.status === "generating") ? "generating" : "error",
     quizzes: todayRows.map((r) => summaries.find((s) => s.id === r.id)!),
   };
 
@@ -625,7 +670,8 @@ export async function overview(db: DB, userId: string) {
 /** Quiz programmés à reprendre : en erreur ou interrompus, tant qu'il reste des essais. */
 export async function retryable(db: DB, userId: string, since: string) {
   const rows = await db.select().from(q).where(and(eq(q.userId, userId), inArray(q.status, ["error", "generating"]), gte(q.forDate, since)));
-  return rows.filter((r) => r.dedupeKey && r.tries < 3 && !running.has(r.id) && Date.now() - r.updatedAt.getTime() > 8 * 60_000 * Math.max(1, r.tries));
+  // Les anciens quiz du soir automatiques (« daily: », « weekly: ») ne sont plus relancés.
+  return rows.filter((r) => r.dedupeKey && !/^(daily|weekly):/.test(r.dedupeKey) && r.tries < 3 && !running.has(r.id) && Date.now() - r.updatedAt.getTime() > 8 * 60_000 * Math.max(1, r.tries));
 }
 
 /** Le quiz a-t-il été commencé ? Sert aux rappels du soir. */

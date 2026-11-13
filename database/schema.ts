@@ -1060,7 +1060,7 @@ export const quizzes = pgTable(
     forDate: date("for_date").notNull(),
     homeworkId: uuid("homework_id").references(() => schoolHomework.id, { onDelete: "cascade" }),
     stage: text("stage"), // j7 | j3 | j1
-    options: jsonb("options").$type<{ count?: number; difficulty?: string; focus?: string; fromQuizId?: string }>().notNull().default({}),
+    options: jsonb("options").$type<{ count?: number; difficulty?: string; focus?: string; fromQuizId?: string; chosen?: boolean }>().notNull().default({}),
     sources: jsonb("sources").$type<QuizSource[]>().notNull().default([]),
     questions: jsonb("questions").$type<QuizQuestion[]>().notNull().default([]),
     keyPoints: jsonb("key_points").$type<string[]>().notNull().default([]),

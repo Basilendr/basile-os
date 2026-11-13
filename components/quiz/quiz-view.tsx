@@ -37,7 +37,7 @@ type Overview = {
 };
 
 const KIND: Record<string, { label: string; tone: Tone }> = {
-  daily: { label: "Quiz du soir", tone: "accent" },
+  daily: { label: "Quiz du jour", tone: "accent" },
   weekly: { label: "Bilan de la semaine", tone: "violet" },
   eval: { label: "Évaluation", tone: "warning" },
   custom: { label: "Mes documents", tone: "neutral" },
@@ -93,12 +93,6 @@ export function QuizView() {
   const [filter, setFilter] = useState<"todo" | "done" | "all">("todo");
   const refresh = () => qc.invalidateQueries({ queryKey: ["quiz"] });
 
-  const check = () =>
-    run("check", async () => {
-      const r = await api.post<{ pending: number }>("/api/quiz/check");
-      await refresh();
-      if (!r.pending) toast({ kind: "info", title: "Aucun nouveau cours pour l'instant", description: "Dès qu'un cours est enregistré dans ton Drive, ton quiz se prépare." });
-    });
   const review = () =>
     run("review", async () => {
       const r = await api.post<{ id: string }>("/api/quiz/review");
@@ -125,7 +119,7 @@ export function QuizView() {
     <div className="mx-auto max-w-[1280px] px-1 pt-1 pb-10 md:px-3 md:pt-2">
       <PageHeader
         title="Quiz"
-        description="Tes cours du jour transformés en questions chaque soir, un bilan le week-end et des révisions avant chaque évaluation."
+        description="Choisis chaque jour le document de ton quiz, et des révisions avant chaque évaluation."
         actions={
           <>
             <Button size="sm" variant="ghost" icon={<Settings2 className="size-3.5" />} onClick={() => setSettingsOpen(true)}>
@@ -148,13 +142,13 @@ export function QuizView() {
           <Skeleton className="h-48" />
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
           <div className="flex min-w-0 flex-col gap-4">
             {(!o.ready.drive || !o.ready.ai) && (
               <Card className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <AlertTriangle className="size-4 shrink-0 text-warning" />
                 <p className="min-w-0 flex-1 text-[13px]">
-                  {!o.ready.drive ? "Connecte Google Drive pour que tes cours soient lus chaque soir." : "Ajoute une clé d'IA dans les paramètres pour que les quiz puissent être rédigés."}
+                  {!o.ready.drive ? "Connecte Google Drive pour choisir tes documents de cours." : "Ajoute une clé d'IA dans les paramètres pour que les quiz puissent être rédigés."}
                 </p>
                 <Link href={!o.ready.drive ? "/integrations" : "/settings?s=config"}>
                   <Button size="sm" variant="primary">
@@ -164,7 +158,7 @@ export function QuizView() {
               </Card>
             )}
 
-            <Today o={o} busy={busy} onCheck={check} onReview={review} onRetry={retry} />
+            <Today o={o} busy={busy} onReview={review} onRetry={retry} onCreate={() => setCreating(true)} />
 
             {o.evals.length > 0 && (
               <section className="flex flex-col gap-3">
@@ -184,7 +178,7 @@ export function QuizView() {
                 <EmptyState
                   icon={<ListChecks className="size-5" />}
                   title={filter === "todo" ? "Rien en attente" : "Aucun quiz pour l'instant"}
-                  description={filter === "todo" ? "Tes prochains quiz apparaîtront ici dès qu'ils seront prêts." : "Crée ton premier quiz à partir de tes documents, ou attends celui de ce soir."}
+                  description={filter === "todo" ? "Tes prochains quiz apparaîtront ici dès qu'ils seront prêts." : "Choisis un document pour ton quiz du jour, ou crée un quiz à partir de tes documents."}
                   action={
                     <Button size="sm" icon={<Plus className="size-3.5" />} onClick={() => setCreating(true)}>
                       Créer un quiz
@@ -337,78 +331,165 @@ function Stat({ value, label, icon }: { value: string; label: string; icon?: Rea
 
 /* ------------------------------------------------------------------ quiz du jour */
 
-function Today({ o, busy, onCheck, onReview, onRetry }: { o: Overview; busy: string | null; onCheck: () => void; onReview: () => void; onRetry: (id: string) => void }) {
+type TodayDoc = { id: string; name: string; mimeType: string; subject: string | null; path: string; modifiedTime: string | null; quizzes: number };
+
+/**
+ * Quiz du jour : plus de quiz automatique. L'élève choisit le document enregistré dans son Drive
+ * (et, s'il veut, la partie : « thème 3 »), puis le quiz est rédigé sur ce document seulement.
+ */
+function Today({ o, busy, onReview, onRetry, onCreate }: { o: Overview; busy: string | null; onReview: () => void; onRetry: (id: string) => void; onCreate: () => void }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
   const { today } = o;
   const list = today.quizzes;
-  const state = today.state;
-  const label = today.weekend ? "Bilan de la semaine" : list.length > 1 ? "Quiz du jour par matière" : "Quiz du jour";
+  const [range, setRange] = useState<"today" | "week">(today.weekend ? "week" : "today");
+  const [open, setOpen] = useState<string | null>(null);
+  const [focus, setFocus] = useState("");
+  const [sending, setSending] = useState<string | null>(null);
+  const docs = useQuery({
+    queryKey: ["quiz", "docs", range],
+    queryFn: () => api.get<{ drive: boolean; docs: TodayDoc[] }>(`/api/quiz/today?range=${range}`),
+    enabled: o.ready.drive,
+    staleTime: 60_000,
+  });
+  const generating = list.some((x) => x.status === "generating");
   const left = list.filter((x) => x.status === "ready" && !x.completed).length;
-  const questions = list.reduce((n, x) => n + x.count, 0);
-  let title: string;
-  let sub: string;
-  if (list.length && state !== "error") {
-    title = left === 0 && list.every((x) => x.status === "ready") ? "Tous tes quiz du jour sont faits" : list.length === 1 ? list[0].title || list[0].subject || "Ton quiz du jour" : `${list.length} matières à réviser ce soir`;
-    sub = list.some((x) => x.status === "generating") ? "Je lis tes cours et rédige une question par notion : une à deux minutes par matière." : `${plural(questions, "question", "questions")} sur ${list.length > 1 ? "les cours de la journée" : "le cours de la journée"}, une par notion.`;
-  } else if (state === "error") {
-    title = "Le quiz n'a pas pu être préparé";
-    sub = list[0]?.error ?? "Une erreur est survenue pendant la préparation.";
-  } else if (state === "waiting") {
-    title = today.weekend ? `Ton bilan de la semaine arrive à ${today.slotHour} h` : `Tes quiz arrivent à ${today.slotHour} h`;
-    sub = today.weekend ? "Un quiz général sur tous les cours enregistrés dans ton Drive cette semaine." : "Un quiz par matière sur les cours enregistrés dans ton Drive aujourd'hui, avec une question sur chaque notion.";
-  } else {
-    title = today.weekend ? "Pas de cours repéré cette semaine" : "Pas de nouveau cours repéré aujourd'hui";
-    sub = o.settings.folderName ? `Aucun document de cours modifié dans « ${o.settings.folderName} ». Dès qu'un cours est enregistré, ton quiz se prépare.` : "Dès qu'un cours est enregistré dans ton Drive, ton quiz se prépare.";
-  }
-  const showActions = !list.length || state === "error";
+
+  const choose = async (d: TodayDoc) => {
+    setSending(d.id);
+    try {
+      await api.post("/api/quiz/today", { source: { id: d.id, name: d.name, mimeType: d.mimeType }, subject: d.subject, focus: focus.trim() || undefined });
+      setOpen(null);
+      setFocus("");
+      await qc.invalidateQueries({ queryKey: ["quiz"] });
+      toast({ kind: "success", title: "Quiz en préparation", description: "Il sera prêt dans une à deux minutes." });
+    } catch (e) {
+      toast({ kind: "error", title: "Quiz impossible", description: (e as Error).message });
+    } finally {
+      setSending(null);
+    }
+  };
+
+  const title = generating
+    ? "Ton quiz se prépare…"
+    : list.length && left === 0 && list.every((x) => x.status === "ready")
+      ? "Quiz du jour terminé"
+      : list.length
+        ? list.length === 1
+          ? "Ton quiz du jour est prêt"
+          : `${list.length} quiz choisis aujourd'hui`
+        : "Sur quoi veux-tu ton quiz aujourd'hui ?";
+  const sub = generating
+    ? "Je lis le document et rédige une question par notion : une à deux minutes."
+    : list.length
+      ? "Tu peux en ajouter un autre sur un document ci-dessous."
+      : "Choisis un document que tu as enregistré, et précise la partie si tu veux (par exemple « thème 3 »).";
+  const items = docs.data?.docs ?? [];
+
   return (
     <Card className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_140%_at_0%_0%,color-mix(in_srgb,var(--accent)_13%,transparent),transparent_60%)]" />
-      <div className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+      <div className="relative flex items-start gap-4 p-5">
         <div className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-accent">
-          {state === "generating" ? <Loader2 className="size-6 animate-spin" /> : list.length && left === 0 && state === "ready" ? <Check className="size-6" /> : <Sparkles className="size-6" />}
+          {generating ? <Loader2 className="size-6 animate-spin" /> : list.length && left === 0 ? <Check className="size-6" /> : <Sparkles className="size-6" />}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="t-meta font-medium tracking-wide uppercase">
-            {label} · {day(today.date, { weekday: "long", day: "numeric", month: "long" })}
-          </p>
+          <p className="t-meta font-medium tracking-wide uppercase">Quiz du jour · {day(today.date, { weekday: "long", day: "numeric", month: "long" })}</p>
           <h2 className="mt-1 text-[19px] leading-snug font-semibold tracking-[-0.01em] text-balance">{title}</h2>
-          <p className={cn("t-sub mt-1", state === "error" && "text-danger")}>{sub}</p>
+          <p className="t-sub mt-1">{sub}</p>
         </div>
-        {showActions && (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {state === "error" && list[0] ? (
-              <Button variant="primary" icon={<RefreshCw className="size-3.5" />} loading={busy === `retry:${list[0].id}`} onClick={() => onRetry(list[0].id)}>
-                Réessayer
-              </Button>
-            ) : (
-              <>
-                {state === "none" && o.cards.due > 0 && (
-                  <Button variant="primary" loading={busy === "review"} onClick={onReview}>
-                    Revoir mes erreurs ({o.cards.due})
-                  </Button>
-                )}
-                <Button variant={state === "none" && o.cards.due > 0 ? "secondary" : "primary"} loading={busy === "check"} disabled={!o.ready.drive || !o.ready.ai} onClick={onCheck}>
-                  {state === "waiting" ? "Les préparer maintenant" : "Vérifier à nouveau"}
-                </Button>
-              </>
-            )}
-          </div>
-        )}
       </div>
-      {list.length > 0 && state !== "error" && (
-        <ul className="relative grid gap-2 px-5 pb-5 sm:grid-cols-2">
+
+      {list.length > 0 && (
+        <ul className="relative grid grid-cols-1 gap-2 px-5 pb-4 sm:grid-cols-2">
           {list.map((x) => (
             <TodayQuiz key={x.id} x={x} retrying={busy === `retry:${x.id}`} onRetry={() => onRetry(x.id)} />
           ))}
         </ul>
       )}
-      {list.length > 0 && state !== "error" && (
-        <div className="relative flex justify-end px-5 pb-4 -mt-2">
-          <button onClick={onCheck} disabled={busy === "check"} className="focus-ring rounded-[6px] text-[12.5px] text-fg-3 hover:text-fg-2 disabled:opacity-50">
-            {busy === "check" ? "Recherche de nouveaux cours…" : "Un cours manque ? Vérifier à nouveau"}
-          </button>
+
+      <div className="relative border-t border-line-soft px-5 pt-4 pb-5">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <h3 className="t-section mr-auto">Documents enregistrés</h3>
+          <Segmented size="sm" value={range} onChange={(v) => (setRange(v), setOpen(null))} options={[{ value: "today", label: "Aujourd'hui" }, { value: "week", label: "7 derniers jours" }]} />
         </div>
-      )}
+        {!o.ready.drive ? (
+          <p className="t-meta">Connecte Google Drive pour voir les documents que tu enregistres.</p>
+        ) : docs.isLoading ? (
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-12" />
+            <Skeleton className="h-12" />
+          </div>
+        ) : docs.error ? (
+          <p className="text-[13px] text-danger">{(docs.error as Error).message}</p>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className="t-meta">{range === "today" ? "Aucun document enregistré dans ton Drive aujourd'hui." : "Aucun document enregistré ces 7 derniers jours."}</p>
+            <div className="flex flex-wrap gap-2">
+              {range === "today" && (
+                <Button size="sm" onClick={() => setRange("week")}>
+                  Voir les 7 derniers jours
+                </Button>
+              )}
+              <Button size="sm" icon={<FolderOpen className="size-3.5" />} onClick={onCreate}>
+                Choisir dans mon Drive
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {items.map((d) => {
+              const isOpen = open === d.id;
+              const when = d.modifiedTime ? new Date(d.modifiedTime) : null;
+              return (
+                <li key={d.id} className={cn("rounded-[12px] border bg-card/80 transition-colors", isOpen ? "border-[color-mix(in_srgb,var(--accent)_35%,transparent)]" : "border-line-soft")}>
+                  <button onClick={() => (setOpen(isOpen ? null : d.id), setFocus(""))} className="focus-ring flex w-full items-center gap-3 rounded-[12px] px-3.5 py-3 text-left" aria-expanded={isOpen}>
+                    <FileText className="size-4 shrink-0 text-fg-3" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13.5px] font-medium">{d.name}</span>
+                      <span className="t-meta block truncate">
+                        {[d.subject, when && (range === "today" ? `à ${when.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}` : when.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }))].filter(Boolean).join(" · ")}
+                      </span>
+                    </span>
+                    {d.quizzes > 0 && <Badge tone="success">Quiz fait</Badge>}
+                    {!isOpen && <span className="shrink-0 text-[12.5px] font-medium text-accent">Choisir</span>}
+                  </button>
+                  {isOpen && (
+                    <form
+                      className="flex flex-col gap-2 px-3.5 pb-3.5 [&>button]:self-start"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        choose(d);
+                      }}
+                    >
+                      <Input autoFocus value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={300} placeholder="Partie à réviser (facultatif), ex. « thème 3 »" className="w-full" aria-label="Partie à réviser" />
+                      <Button type="submit" variant="primary" loading={sending === d.id} icon={<Sparkles className="size-3.5" />}>
+                        {focus.trim() ? "Quiz sur cette partie" : "Quiz sur tout le document"}
+                      </Button>
+                    </form>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {(o.cards.due > 0 || items.length > 0) && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            {items.length > 0 ? (
+              <button onClick={onCreate} className="focus-ring rounded-[6px] text-[12.5px] text-fg-3 hover:text-fg-2">
+                Un autre document ? Choisir dans mon Drive
+              </button>
+            ) : (
+              <span />
+            )}
+            {o.cards.due > 0 && (
+              <Button size="sm" loading={busy === "review"} onClick={onReview}>
+                Revoir mes erreurs ({o.cards.due})
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
@@ -772,17 +853,17 @@ function SettingsDialog({ open, onClose, settings }: { open: boolean; onClose: (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4 rounded-[11px] border border-line-soft bg-bg px-3 py-2.5">
             <div>
-              <p className="text-[13.5px] font-medium">Quiz automatiques</p>
-              <p className="t-meta">Quiz du soir, bilan du week-end et révisions avant les évaluations.</p>
+              <p className="text-[13.5px] font-medium">Rappels de quiz</p>
+              <p className="t-meta">Te demander chaque jour sur quel document faire ton quiz, et préparer les révisions avant les évaluations.</p>
             </div>
-            <Switch checked={v.enabled} onChange={(x) => setV({ ...v, enabled: x })} label="Quiz automatiques" />
+            <Switch checked={v.enabled} onChange={(x) => setV({ ...v, enabled: x })} label="Rappels de quiz" />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            {hour("En semaine", "weekdayHour", "Lun., mar., jeu., ven.")}
+            {hour("En semaine", "weekdayHour", "Heure du rappel")}
             {hour("Le mercredi", "wednesdayHour", "Après-midi libre")}
-            {hour("Le week-end", "weekendHour", "Bilan de la semaine")}
+            {hour("Le week-end", "weekendHour", "Documents de la semaine")}
           </div>
-          <Field label="Questions minimum par matière" hint="Le quiz s'allonge avec le cours : une question par notion, jusqu'à 25.">
+          <Field label="Questions minimum par quiz" hint="Le quiz s'allonge avec le cours : une question par notion, jusqu'à 25.">
             <Select value={String(v.questionCount)} onChange={(e) => setV({ ...v, questionCount: Number(e.target.value) })}>
               {[...new Set([5, 8, 10, 12, 15, 20, v.questionCount])].sort((a, b) => a - b).map((n) => (
                 <option key={n} value={n}>
@@ -807,7 +888,7 @@ function SettingsDialog({ open, onClose, settings }: { open: boolean; onClose: (
                 </Button>
               )}
             </div>
-            <p className="t-meta mt-1.5">Les quiz du soir et du week-end portent sur les documents modifiés dans ce dossier. Limite-le à ton dossier de cours pour ignorer le reste.</p>
+            <p className="t-meta mt-1.5">Seuls les documents de ce dossier te sont proposés pour le quiz du jour. Limite-le à ton dossier de cours pour ignorer le reste.</p>
           </div>
           <p className="t-meta flex items-start gap-1.5">
             <CalendarClock className="mt-px size-3.5 shrink-0" />
