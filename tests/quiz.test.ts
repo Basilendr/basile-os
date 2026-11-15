@@ -315,6 +315,8 @@ describe("quiz programmés", () => {
     expect(prompt).toContain("thème 3");
     expect(quiz.questions.filter((q) => !q.review)).toHaveLength(3);
     expect(JSON.stringify((await getQuiz(db, userId, quiz.id)).questions)).not.toContain("answerIndex");
+    // La notion (souvent la réponse) reste cachée tant que la question n'est pas répondue.
+    expect((await getQuiz(db, userId, quiz.id)).questions.every((x) => x.topic === null)).toBe(true);
     expect((await todayDocs(db, userId, "today")).docs[0].quizzes).toBe(1);
 
     // Évaluation dans 3 jours avec ses documents : le quiz J-3 est préparé ; sans document, un rappel est envoyé.

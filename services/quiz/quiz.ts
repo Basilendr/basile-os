@@ -252,7 +252,8 @@ function publicQuestion(question: QuizQuestion, a?: QuizAnswer) {
     prompt: question.prompt,
     choices: question.choices,
     subject: question.subject,
-    topic: question.topic,
+    // La notion donne souvent la réponse (« Prise de la Bastille ») : elle n'est envoyée qu'une fois la question répondue.
+    topic: a ? question.topic : null,
     difficulty: question.difficulty,
     review: question.review ?? false,
     ...(a ? { answered: { value: a.value, correct: a.correct, feedback: a.feedback }, reveal: reveal(question) } : {}),

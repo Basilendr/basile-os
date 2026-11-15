@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/toast";
 
 type Reveal = { answerIndex?: number; answerBool?: boolean; answer?: string; explanation: string; source?: string };
 type Answered = { value: string; correct: boolean; feedback?: string };
-type Question = { id: string; type: "mcq" | "tf" | "open"; prompt: string; choices?: string[]; subject: string; topic: string; difficulty: number; review: boolean; answered?: Answered; reveal?: Reveal };
+type Question = { id: string; type: "mcq" | "tf" | "open"; prompt: string; choices?: string[]; subject: string; topic: string | null; difficulty: number; review: boolean; answered?: Answered; reveal?: Reveal };
 type QuizData = {
   id: string;
   kind: string;
@@ -336,7 +336,7 @@ function Play({ data }: { data: QuizData }) {
           <Card className="p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge>{cur.subject}</Badge>
-              {cur.topic && <span className="t-meta">{cur.topic}</span>}
+              {cur.answered && cur.topic && <span className="t-meta">{cur.topic}</span>}
               {cur.review && (
                 <Badge tone="warning">
                   <RotateCcw className="size-3" />À revoir
