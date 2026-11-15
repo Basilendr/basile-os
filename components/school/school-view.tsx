@@ -30,6 +30,12 @@ function mondayOf(d: Date) {
   return s;
 }
 
+/** Semaine de cours à afficher : le week-end, c'est déjà la semaine qui vient (celle du nouvel emploi du temps reçu). */
+function schoolWeek(d = new Date()) {
+  const day = d.getDay();
+  return mondayOf(day === 6 || day === 0 ? addDays(d, day === 6 ? 2 : 1) : d);
+}
+
 export function SchoolView() {
   const sp = useSearchParams();
   const router = useRouter();
@@ -115,7 +121,7 @@ function Timetable() {
   const sp = useSearchParams();
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [week, setWeek] = useState(() => mondayOf(sp.get("week") ? new Date(`${sp.get("week")}T12:00:00`) : new Date()));
+  const [week, setWeek] = useState(() => (sp.get("week") ? mondayOf(new Date(`${sp.get("week")}T12:00:00`)) : schoolWeek()));
   const [adding, setAdding] = useState(false);
   const [checking, setChecking] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
@@ -177,8 +183,8 @@ function Timetable() {
         <Button size="icon-sm" variant="ghost" onClick={() => setWeek(addDays(week, 7))} aria-label="Semaine suivante">
           <ChevronRight className="size-4" />
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => setWeek(mondayOf(new Date()))}>
-          Cette semaine
+        <Button size="sm" variant="ghost" onClick={() => setWeek(schoolWeek())}>
+          {[0, 6].includes(new Date().getDay()) ? "Semaine prochaine" : "Cette semaine"}
         </Button>
         <span className="text-[14px] font-medium">
           {week.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} – {addDays(week, days.length - 1).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
