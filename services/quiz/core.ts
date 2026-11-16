@@ -22,7 +22,12 @@ export type RawQuestion = {
   topic?: string | null;
   source?: string | null;
   difficulty?: number | null;
+  lang?: string | null;
+  say?: string | null;
+  answerInLang?: boolean | null;
 };
+
+const LANG_CODES = new Set(["en", "es", "de", "it", "pt", "nl", "zh", "ja", "ar", "ru", "la"]);
 
 const ARTICLES = /\b(le|la|les|l|un|une|des|du|de|d|the|an|el|los|las)\b/g;
 
@@ -108,6 +113,7 @@ export function sanitizeQuestions(raw: RawQuestion[], count: number, rand: () =>
       topic: str(r.topic, 80),
       source: str(r.source, 300) || undefined,
       difficulty: Math.min(3, Math.max(1, Math.round(Number(r.difficulty) || 2))),
+      ...(typeof r.lang === "string" && LANG_CODES.has(r.lang) ? { lang: r.lang, say: str(r.say, 300) || undefined, answerInLang: r.answerInLang === true || undefined } : {}),
     };
     if (r.type === "mcq") {
       const idx = Number(r.answerIndex);
@@ -133,7 +139,7 @@ export function sanitizeQuestions(raw: RawQuestion[], count: number, rand: () =>
 
 /** Ce qui est dévoilé une fois la question répondue. */
 export function reveal(q: QuizQuestion) {
-  return { answerIndex: q.answerIndex, answerBool: q.answerBool, answer: q.answer, explanation: q.explanation, source: q.source };
+  return { answerIndex: q.answerIndex, answerBool: q.answerBool, answer: q.answer, explanation: q.explanation, source: q.source, answerInLang: q.answerInLang };
 }
 
 /** Bonne réponse en toutes lettres. */

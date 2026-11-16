@@ -1,0 +1,13 @@
+import { Suspense } from "react";
+import { DeckView } from "@/components/flashcards/deck-view";
+
+export const metadata = { title: "Vocabulaire" };
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return (
+    <Suspense>
+      <DeckView id={id} />
+    </Suspense>
+  );
+}

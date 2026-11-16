@@ -11,10 +11,11 @@ import { Badge, Card, ErrorState, Kbd, Progress, Skeleton } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { Speak } from "@/components/flashcards/shared";
 
-type Reveal = { answerIndex?: number; answerBool?: boolean; answer?: string; explanation: string; source?: string };
+type Reveal = { answerIndex?: number; answerBool?: boolean; answer?: string; explanation: string; source?: string; answerInLang?: boolean };
 type Answered = { value: string; correct: boolean; feedback?: string };
-type Question = { id: string; type: "mcq" | "tf" | "open"; prompt: string; choices?: string[]; subject: string; topic: string | null; difficulty: number; review: boolean; answered?: Answered; reveal?: Reveal };
+type Question = { id: string; type: "mcq" | "tf" | "open"; prompt: string; choices?: string[]; subject: string; topic: string | null; difficulty: number; review: boolean; lang?: string | null; say?: string | null; answered?: Answered; reveal?: Reveal };
 type QuizData = {
   id: string;
   kind: string;
@@ -343,7 +344,10 @@ function Play({ data }: { data: QuizData }) {
                 </Badge>
               )}
             </div>
-            <h2 className="mt-3 text-[17px] leading-snug font-semibold text-balance">{cur.prompt}</h2>
+            <div className="mt-3 flex items-start gap-2">
+              <h2 className="min-w-0 flex-1 text-[17px] leading-snug font-semibold text-balance">{cur.prompt}</h2>
+              {cur.lang && cur.say && <Speak text={cur.say} lang={cur.lang} />}
+            </div>
 
             {cur.type === "mcq" && (
               <div className="mt-4 flex flex-col gap-2">
@@ -446,8 +450,19 @@ function Play({ data }: { data: QuizData }) {
                 <p className={cn("text-[14px] font-semibold", a.correct ? "text-success" : "text-danger")}>{a.correct ? "Bonne réponse !" : a.value ? "Pas tout à fait" : "À retenir"}</p>
                 {a.feedback && <p className="mt-1 text-[13.5px] text-fg-2">{a.feedback}</p>}
                 {!a.correct && cur.type !== "mcq" && (
-                  <p className="mt-1.5 text-[14px]">
-                    Réponse attendue : <span className="font-semibold">{rightText(cur)}</span>
+                  <p className="mt-1.5 flex items-center gap-2 text-[14px]">
+                    <span>
+                      Réponse attendue : <span className="font-semibold" lang={cur.reveal?.answerInLang ? (cur.lang ?? undefined) : undefined}>{rightText(cur)}</span>
+                    </span>
+                    {cur.lang && cur.reveal?.answerInLang && <Speak text={rightText(cur)} lang={cur.lang} size="sm" />}
+                  </p>
+                )}
+                {a.correct && cur.lang && cur.reveal?.answerInLang && (
+                  <p className="mt-1.5 flex items-center gap-2 text-[14px]">
+                    <span className="font-semibold" lang={cur.lang}>
+                      {rightText(cur)}
+                    </span>
+                    <Speak text={rightText(cur)} lang={cur.lang} size="sm" />
                   </p>
                 )}
                 {cur.reveal?.explanation && <p className="mt-2 text-[14px] leading-relaxed text-fg-2">{cur.reveal.explanation}</p>}

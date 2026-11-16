@@ -156,9 +156,9 @@ export const AI_MODELS: Record<string, { id: string; label: string; hint: string
     { id: "gemini-pro-latest", label: "Gemini Pro", hint: "Quota gratuit réduit" },
   ],
   groq: [
-    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B", hint: "Gratuit, très rapide" },
-    { id: "openai/gpt-oss-120b", label: "GPT-OSS 120B", hint: "Gratuit, plus réfléchi" },
-    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B", hint: "Gratuit, instantané" },
+    { id: "openai/gpt-oss-120b", label: "GPT-OSS 120B", hint: "Gratuit, très rapide" },
+    { id: "openai/gpt-oss-20b", label: "GPT-OSS 20B", hint: "Gratuit, instantané" },
+    { id: "qwen/qwen3.8-27b", label: "Qwen 3.8 27B", hint: "Gratuit, polyvalent" },
   ],
   mistral: [
     { id: "mistral-medium-latest", label: "Mistral Medium", hint: "Gratuit (essai), lit les PDF" },

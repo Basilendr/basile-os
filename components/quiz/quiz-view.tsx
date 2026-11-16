@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowRight, CalendarClock, Check, FileText, Flame, FolderOpen, ListChecks, Loader2, Plus, RefreshCw, RotateCcw, Settings2, Sparkles, Target, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarClock, Check, FileText, Flame, FolderOpen, Languages, ListChecks, Loader2, Plus, RefreshCw, RotateCcw, Settings2, Sparkles, Target, Trash2, X } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { cn, plural } from "@/lib/utils";
 import { Badge, Card, CardHeader, EmptyState, ErrorState, PageHeader, Progress, Skeleton, type Tone } from "@/components/ui/misc";
@@ -12,6 +12,7 @@ import { Segmented } from "@/components/ui/tabs";
 import { Field, Input, Select, Switch, Textarea } from "@/components/ui/input";
 import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { useVocab } from "@/components/flashcards/vocab-view";
 import { DrivePicker, type PickedDoc } from "./drive-picker";
 
 type Attempt = { score: number; total: number; answered: number; completed: boolean };
@@ -217,6 +218,8 @@ export function QuizView() {
                 <p className="t-meta mt-2">{o.stats.doneToday ? "Quiz fait aujourd'hui : la série continue." : o.stats.streak > 0 ? "Fais un quiz aujourd'hui pour garder ta série." : "14 derniers jours"}</p>
               </div>
             </Card>
+
+            <VocabCard />
 
             <Card>
               <CardHeader title="Mes erreurs à revoir" icon={<RotateCcw className="size-4" />} />
@@ -898,5 +901,26 @@ function SettingsDialog({ open, onClose, settings }: { open: boolean; onClose: (
       </Dialog>
       <DrivePicker open={open && picker} mode="folder" onClose={() => setPicker(false)} onConfirm={(f) => setV({ ...v, folderId: f[0]?.id ?? null, folderName: f[0]?.name ?? null })} />
     </>
+  );
+}
+
+/** Raccourci vers le vocabulaire des langues vivantes (cartes à revoir aujourd'hui). */
+function VocabCard() {
+  const { data } = useVocab();
+  const t = data?.totals;
+  return (
+    <Card>
+      <CardHeader title="Vocabulaire" icon={<Languages className="size-4" />} />
+      <div className="px-4 pb-4">
+        <p className="text-[13px]">
+          {!t ? "…" : t.total === 0 ? "Tes cours de langue en flashcards : photo, Drive ou saisie." : t.due + t.fresh > 0 ? `${t.due} mot${t.due > 1 ? "s" : ""} à revoir · ${t.fresh} nouveau${t.fresh > 1 ? "x" : ""}` : "Tout est révisé aujourd'hui."}
+        </p>
+        <Link href={t && t.due + t.fresh > 0 ? "/vocabulaire/study?mode=cards" : "/vocabulaire"}>
+          <Button className="mt-3 w-full justify-center" variant={t && t.due > 0 ? "primary" : "secondary"}>
+            {t && t.due + t.fresh > 0 ? "Réviser le vocabulaire" : "Ouvrir le vocabulaire"}
+          </Button>
+        </Link>
+      </div>
+    </Card>
   );
 }

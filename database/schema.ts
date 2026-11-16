@@ -1008,6 +1008,12 @@ export type QuizQuestion = {
   difficulty: number;
   /** Question de révision issue d'une erreur passée. */
   review?: boolean;
+  /** Langue vivante (en, es, de…) : lecture à voix haute et correction attentive aux accents. */
+  lang?: string;
+  /** Mot ou phrase en langue étrangère de l'énoncé, à faire écouter. */
+  say?: string;
+  /** La réponse attendue est dans la langue étudiée. */
+  answerInLang?: boolean;
 };
 export type QuizAnswer = { questionId: string; value: string; correct: boolean; feedback?: string; at: string };
 
@@ -1200,4 +1206,69 @@ export const pushSubscriptions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("push_subscriptions_endpoint_uq").on(t.endpoint)],
+);
+
+/* ------------------------------------------------------------------ vocabulaire et langues vivantes */
+
+export type FlashPair = { text: string; fr: string };
+/** Fiche pour apprendre un cours de langue : comprendre (résumé), retenir (phrases clés, grammaire), parler (oral). */
+export type FlashGuide = {
+  summary: string;
+  sentences: FlashPair[];
+  grammar: { title: string; explanation: string; examples: FlashPair[] }[];
+  oral: { question: string; answer: string; fr: string }[];
+};
+
+/** Paquets de cartes de vocabulaire : tirés d'un document Drive, d'une photo, d'un texte collé ou saisis à la main. */
+export const flashDecks = pgTable(
+  "flash_decks",
+  {
+    id: id(),
+    userId: owner(),
+    title: text("title").notNull().default(""),
+    subject: text("subject"),
+    /** Langue étudiée (code : en, es, de, it…). */
+    lang: text("lang").notNull().default("en"),
+    source: text("source").notNull(), // drive | scan | text | manual
+    sources: jsonb("sources").$type<QuizSource[]>().notNull().default([]),
+    focus: text("focus"),
+    /** Texte du cours (document lu ou photo retranscrite) : sert à la fiche du cours. */
+    text: text("text").notNull().default(""),
+    status: text("status").notNull().default("ready"), // generating | ready | error
+    error: text("error"),
+    guide: jsonb("guide").$type<FlashGuide | null>(),
+    guideStatus: text("guide_status").notNull().default("none"), // none | generating | ready | error
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("flash_decks_user_idx").on(t.userId, t.createdAt)],
+);
+
+/** Une carte : le mot dans la langue étudiée, sa traduction, un exemple ; répétition espacée. */
+export const flashCards = pgTable(
+  "flash_cards",
+  {
+    id: id(),
+    userId: owner(),
+    deckId: uuid("deck_id")
+      .notNull()
+      .references(() => flashDecks.id, { onDelete: "cascade" }),
+    term: text("term").notNull(),
+    translation: text("translation").notNull(),
+    example: text("example"),
+    exampleFr: text("example_fr"),
+    note: text("note"),
+    kind: text("kind"), // mot | verbe | expression | phrase
+    position: integer("position").notNull().default(0),
+    state: text("state").notNull().default("new"), // new | learning | review
+    interval: integer("interval").notNull().default(0),
+    ease: integer("ease").notNull().default(250),
+    reps: integer("reps").notNull().default(0),
+    lapses: integer("lapses").notNull().default(0),
+    dueDate: date("due_date"),
+    lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("flash_cards_deck_idx").on(t.deckId, t.position), index("flash_cards_due_idx").on(t.userId, t.dueDate)],
 );

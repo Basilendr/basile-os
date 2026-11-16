@@ -25,6 +25,7 @@ import {
   Search,
   Command,
   Bot,
+  Languages,
   type LucideIcon,
 } from "lucide-react";
 
@@ -58,13 +59,14 @@ export const FOLDERS: NavFolder[] = [
   {
     id: "ecole",
     label: "École",
-    hint: "Cours · Quiz · Pomodoro",
+    hint: "Cours · Quiz · Vocabulaire",
     tone: "green",
     items: [
       { href: "/school?tab=timetable", label: "Emploi du temps", icon: Clock, shortcut: "G E" },
       { href: "/school?tab=homework", label: "Devoirs", icon: BookOpen },
       { href: "/school?tab=evals", label: "Évaluations", icon: ClipboardCheck },
       { href: "/quiz", label: "Quiz", icon: ListChecks, shortcut: "G Q" },
+      { href: "/vocabulaire", label: "Vocabulaire", icon: Languages, shortcut: "G V" },
       { href: "/school?tab=focus", label: "Pomodoro", icon: Timer },
       { href: "/inbox?box=school", label: "Messages ED", icon: Inbox },
     ],

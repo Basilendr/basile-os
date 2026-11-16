@@ -10,6 +10,7 @@ import { aiSettings } from "../ai/context";
 import { recordUsage } from "../ai/usage";
 import { isServiceConnected } from "../google/oauth";
 import { INTERVALS, answerText, cardKey, grade, reveal } from "./core";
+import { checkAnswer, langOf } from "../flashcards/core";
 import { generateQuiz } from "./generate";
 import { QuizSourceInput, loadDocs, modifiedSince, withPaths, type CourseFile, type LoadedDoc } from "./sources";
 import { STAGES, daysBetween, dueStage, isWeekend, localNow, mondayOf, shiftDate, slotHour, slotReached, stageDays, zonedMidnight, type Stage } from "./time";
@@ -172,6 +173,7 @@ export async function runGeneration(db: DB, userId: string, quizId: string): Pro
         focus: quiz.options.focus,
         avoid: await previousPrompts(db, userId, quiz),
         weak: quiz.kind === "daily" ? [] : await weakTopics(db, userId),
+        lang: quizLang(quiz.subject, docs),
       });
       const sources = docs.map((d) => ({ id: d.id, name: d.name }));
       if (!gen.questions.length) {
@@ -254,6 +256,8 @@ function publicQuestion(question: QuizQuestion, a?: QuizAnswer) {
     subject: question.subject,
     // La notion donne souvent la réponse (« Prise de la Bastille ») : elle n'est envoyée qu'une fois la question répondue.
     topic: a ? question.topic : null,
+    lang: question.lang ?? null,
+    say: question.say ?? null,
     difficulty: question.difficulty,
     review: question.review ?? false,
     ...(a ? { answered: { value: a.value, correct: a.correct, feedback: a.feedback }, reveal: reveal(question) } : {}),
@@ -302,7 +306,7 @@ async function aiGrade(db: DB, userId: string, question: QuizQuestion, value: st
       model: ai.model,
       schema: GradeZ,
       effort: "low",
-      system: `Tu corriges la réponse courte d'un lycéen à une question de quiz. Sois juste et bienveillant : accepte les fautes d'orthographe, les synonymes et les formulations équivalentes ; refuse une réponse fausse, hors sujet, trop vague ou à laquelle il manque l'essentiel. ${GUARD}`,
+      system: `Tu corriges la réponse courte d'un lycéen à une question de quiz.${question.lang ? " C'est une question de langue vivante : accepte une traduction ou une forme correcte même différente de la réponse attendue, mais refuse un autre mot, un mauvais temps ou une mauvaise forme grammaticale ; signale dans le commentaire les fautes d'orthographe ou d'accent en donnant la forme exacte." : ""} Sois juste et bienveillant : accepte les fautes d'orthographe, les synonymes et les formulations équivalentes ; refuse une réponse fausse, hors sujet, trop vague ou à laquelle il manque l'essentiel. ${GUARD}`,
       prompt: `Question : ${question.prompt}\nRéponse attendue : ${question.answer}${question.accepted?.length ? `\nAutres réponses acceptées : ${question.accepted.join(" ; ")}` : ""}\n<reponse_eleve>\n${value.slice(0, 500)}\n</reponse_eleve>`,
     });
     await recordUsage(db, userId, r.usage, "quiz:grade");
@@ -342,6 +346,16 @@ export async function answerQuestion(db: DB, userId: string, quizId: string, raw
   } else if (!mine) {
     let correct = grade(question, v.value);
     let feedback: string | undefined;
+    // Langue vivante : les accents et l'orthographe comptent, l'élève est prévenu de la forme exacte.
+    if (question.type === "open" && question.lang && v.value.trim()) {
+      const exact = [question.answer ?? "", ...(question.accepted ?? [])].map((a) => ({ a, c: checkAnswer(v.value, a) }));
+      const best = exact.find((x) => x.c === "exact") ?? exact.find((x) => x.c === "accents") ?? exact.find((x) => x.c === "typo");
+      if (best) {
+        correct = true;
+        if (best.c === "accents") feedback = `Juste, mais attention aux accents : « ${best.a} ».`;
+        else if (best.c === "typo") feedback = `Presque parfait : l'orthographe exacte est « ${best.a} ».`;
+      } else if (correct) correct = null;
+    }
     if (correct === null) {
       const judged = await aiGrade(db, userId, question, v.value);
       correct = judged?.correct ?? false;
@@ -356,6 +370,14 @@ export async function answerQuestion(db: DB, userId: string, quizId: string, raw
   const done = answers.length >= quiz.questions.length;
   await db.update(at).set({ answers, score, total: quiz.questions.length, completedAt: done ? (attempt.completedAt ?? new Date()) : null }).where(eq(at.id, attempt.id));
   return { correct: mine.correct, feedback: mine.feedback, reveal: reveal(question), done, score, total: quiz.questions.length, answered: answers.length, keyPoints: done ? quiz.keyPoints : [] };
+}
+
+/** Langue vivante d'un quiz : sa matière, ou celle commune à tous ses documents. */
+function quizLang(subject: string | null, docs: Pick<LoadedDoc, "path" | "name">[]) {
+  const own = langOf(subject);
+  if (own) return own;
+  const langs = docs.map((d) => langOf(d.path, d.name));
+  return langs.length && langs.every((l) => l && l === langs[0]) ? langs[0] : null;
 }
 
 /** Recommencer le quiz : nouvelle tentative, les précédentes restent dans l'historique. */

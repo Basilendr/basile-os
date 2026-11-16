@@ -8,6 +8,7 @@ import { completeJson } from "../ai/provider";
 import { aiSettings } from "../ai/context";
 import { recordUsage } from "../ai/usage";
 import { sanitizeQuestions } from "./core";
+import { LANGS, isLang } from "../flashcards/core";
 import type { LoadedDoc } from "./sources";
 import type { Stage } from "./time";
 
@@ -35,6 +36,9 @@ const QuizZ = z.object({
       topic: z.string().describe("Notion précise, en 2 à 5 mots"),
       source: z.string().nullish().describe("Nom exact du document d'où vient la question"),
       difficulty: z.number().nullish().describe("1 = restitution, 2 = compréhension, 3 = application ou piège"),
+      lang: z.string().nullish().describe("Cours de langue vivante uniquement : code de la langue étudiée (en, es, de, it, pt…) ; null pour les autres matières"),
+      say: z.string().nullish().describe("Langue vivante : le mot ou la phrase en langue étrangère qui figure dans l'énoncé, à faire écouter à l'élève (jamais la réponse) ; null sinon"),
+      answerInLang: z.boolean().nullish().describe("Langue vivante : true si la réponse attendue est écrite dans la langue étudiée"),
     }),
   ),
   keyPoints: z.array(z.string()).describe("Les idées essentielles à retenir, une phrase courte chacune"),
@@ -58,6 +62,8 @@ export type GenInput = {
   avoid?: string[];
   /** Notions ratées récemment, à retravailler. */
   weak?: string[];
+  /** Langue vivante du quiz, quand tous ses cours en relèvent. */
+  lang?: string | null;
 };
 
 export type Generated = { title: string; subject: string | null; questions: QuizQuestion[]; keyPoints: string[]; notions: number };
@@ -76,7 +82,14 @@ Règles :
 - explanation : 1 à 3 phrases qui expliquent POURQUOI la réponse est juste et l'erreur classique à éviter, pour apprendre même en se trompant. Tutoie l'élève.
 - subject : la matière scolaire de la question. Quand le dossier du document porte le nom d'une matière (ex. dossier « Etudes / HGGSP » → « HGGSP »), reprends ce nom tel quel ; sinon déduis-la du contenu (ex. « SES », « Histoire-Géo », « Français », « Anglais », « Espagnol », « SVT », « Maths »). Écris toujours une même matière de la même façon. topic : la notion précise. source : le nom exact du document.
 - Quand une répartition des questions par document est indiquée, respecte-la : chaque cours du jour doit être révisé, pas seulement le plus long.
-- Cours de langue vivante : pose les questions de vocabulaire et de grammaire dans la langue étudiée, avec les explications en français.
+- Cours de langue vivante (anglais, espagnol, allemand…) : l'élève doit savoir comprendre, traduire et réutiliser. Varie les exercices :
+  · vocabulaire dans les deux sens : « Que signifie « el ayuntamiento » ? » (propositions en français) et « Comment dit-on « la mairie » en espagnol ? » (réponse courte dans la langue, avec l'article pour un nom, à l'infinitif pour un verbe, variantes dans "accepted") ;
+  · phrases à trous tirées du cours : la phrase dans la langue avec « ___ », la réponse est le mot manquant à la bonne forme ;
+  · grammaire et conjugaison vues dans le cours : forme correcte d'un verbe, accord, préposition, temps (QCM avec des formes proches) ;
+  · compréhension du texte ou du document étudié : questions posées dans la langue étudiée sur le contenu, propositions dans cette langue ;
+  · traduction de courtes phrases clés du cours (français vers la langue), avec plusieurs traductions correctes dans "accepted".
+  La consigne est en français court, le contenu dans la langue étudiée ; "explanation" en français donne la traduction et la règle. Renseigne "lang", "say" et "answerInLang" pour chaque question de langue.
+  · Orthographe et accents exacts dans la langue étudiée (á, ñ, ü, ß…).
 - Texte brut uniquement : ni Markdown, ni LaTeX, ni HTML.
 - keyPoints : les 5 à 10 idées essentielles à retenir de ces cours, comme une fiche de révision.
 ${GUARD}`;
@@ -127,6 +140,9 @@ function fit(text: string, max: number) {
   return text.length <= max ? text : `${text.slice(0, Math.floor(max * 0.7))}\n[…]\n${text.slice(-Math.floor(max * 0.3))}`;
 }
 
+/** « d'anglais », « d'espagnol », « de latin ». */
+const ofLang = (label: string) => (/^[aeiouéè]/i.test(label) ? `d'${label.toLowerCase()}` : `de ${label.toLowerCase()}`);
+
 export function buildPrompt(i: GenInput) {
   const per = Math.max(6_000, Math.min(40_000, Math.floor(BUDGET / Math.max(1, i.docs.length))));
   const docs = i.docs
@@ -137,6 +153,9 @@ export function buildPrompt(i: GenInput) {
     .join("\n\n");
   return [
     brief(i),
+    i.lang && isLang(i.lang)
+      ? `Cours ${ofLang(LANGS[i.lang].label)} : applique les exercices propres aux langues vivantes (vocabulaire dans les deux sens, phrases à trous, grammaire et conjugaison, compréhension en ${LANGS[i.lang].label.toLowerCase()}, traduction de phrases clés), environ un cinquième de chaque, et renseigne lang = "${i.lang}" pour chaque question.`
+      : "",
     i.focus ? `Demande de l'élève (prioritaire : interroge seulement cette partie du document, même si le reste est plus récent) : ${i.focus.slice(0, 500)}` : "",
     i.weak?.length ? `Notions sur lesquelles il s'est trompé récemment (reviens dessus avec de nouvelles questions si elles figurent dans ces cours) : ${i.weak.slice(0, 12).join(" ; ")}.` : "",
     i.avoid?.length ? `Questions déjà posées (ne les repose pas : aborde d'autres points ou les mêmes notions sous un autre angle) :\n${i.avoid.slice(0, 40).map((p) => `- ${p}`).join("\n")}` : "",
@@ -164,7 +183,10 @@ export async function generateQuiz(db: DB, userId: string, i: GenInput): Promise
     title: r.data.title.replace(/\s+/g, " ").trim().slice(0, 120),
     subject: r.data.subject?.trim().slice(0, 60) || null,
     notions: r.data.notions.length,
-    questions: sanitizeQuestions(r.data.questions, i.count),
+    questions: sanitizeQuestions(
+      r.data.questions.map((x) => ({ ...x, lang: x.lang ?? i.lang ?? null })),
+      i.count,
+    ),
     keyPoints: r.data.keyPoints.map((k) => k.replace(/\s+/g, " ").trim().slice(0, 300)).filter(Boolean).slice(0, 8),
   };
 }

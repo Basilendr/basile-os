@@ -19,12 +19,12 @@ export type ToolCall = { id: string; name: string; input: unknown };
 export type ToolOutcome = { content: string; isError?: boolean };
 export type Usage = { inputTokens: number; outputTokens: number; model: string; provider: ProviderName };
 
-export const DEFAULT_MODELS: Record<ProviderName, string> = { anthropic: "claude-opus-5-5", openai: "gpt-5", gemini: "gemini-flash-latest", groq: "llama-3.3-70b-versatile", mistral: "mistral-medium-latest" };
+export const DEFAULT_MODELS: Record<ProviderName, string> = { anthropic: "claude-opus-5-5", openai: "gpt-5", gemini: "gemini-flash-latest", groq: "openai/gpt-oss-120b", mistral: "mistral-medium-latest" };
 export const MODEL_CHOICES: Record<ProviderName, string[]> = {
   anthropic: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5", "claude-fable-5-1"],
   openai: ["gpt-5", "gpt-5-mini"],
   gemini: ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest"],
-  groq: ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"],
+  groq: ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"],
   mistral: ["mistral-medium-latest", "mistral-small-latest", "mistral-large-latest"],
 };
 export const PROVIDER_LABELS: Record<ProviderName, string> = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", gemini: "Google Gemini", groq: "Groq", mistral: "Mistral" };
@@ -58,7 +58,9 @@ export const TASK_ROUTES: Record<AiTask, { label: string; description: string; c
 
 /** IA qui répondront, dans l'ordre, pour une fonction (le modèle choisi dans les réglages sert pour son fournisseur). */
 export function routeFor(task: AiTask, preferred?: { provider: ProviderName; model: string }) {
-  return TASK_ROUTES[task].chain.filter(providerConfigured).map((provider) => ({ provider, model: preferred?.provider === provider ? preferred.model : DEFAULT_MODELS[provider] }));
+  // Un modèle retiré par le fournisseur (encore mémorisé dans les réglages) est remplacé par le modèle par défaut.
+  const keep = (provider: ProviderName) => preferred?.provider === provider && MODEL_CHOICES[provider].includes(preferred.model);
+  return TASK_ROUTES[task].chain.filter(providerConfigured).map((provider) => ({ provider, model: keep(provider) ? preferred!.model : DEFAULT_MODELS[provider] }));
 }
 
 export const anyProviderConfigured = () => (Object.keys(DEFAULT_MODELS) as ProviderName[]).some(providerConfigured);
