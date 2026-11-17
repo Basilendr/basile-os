@@ -6,85 +6,107 @@
    valeurs brutes, ce qui garantit la cohérence clair / sombre.
 ------------------------------------------------------------------ */
 
-/* Thème clair « Aube » — verre dépoli sur un ciel pastel futuriste. */
+/* Thème clair — verre blanc dépoli posé sur une photo, accent bleu. */
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #eef0fb;
-  --bg-2: rgb(255 255 255 / 0.55);
-  --card: rgb(255 255 255 / 0.62);
-  --raised: rgb(99 102 241 / 0.07);
-  --line: rgb(49 46 129 / 0.12);
-  --line-soft: rgb(49 46 129 / 0.07);
-  --fg: #0f1430;
-  --fg-2: #474f73;
-  --fg-3: #7a81a3;
-  --accent: #6366f1;
-  --accent-2: #0f1430;
+  --bg: #e9edf3;
+  --bg-2: rgb(255 255 255 / 0.6);
+  --card: rgb(255 255 255 / 0.66);
+  --raised: rgb(15 23 42 / 0.05);
+  --line: rgb(15 23 42 / 0.1);
+  --line-soft: rgb(15 23 42 / 0.06);
+  --fg: #0b1220;
+  --fg-2: #3a4356;
+  --fg-3: #687186;
+  --accent: #2f7bf6;
+  --accent-2: #0b1220;
   --accent-fg: #ffffff;
-  --primary: #1e1b4b;
+  --primary: #2f7bf6;
   --primary-fg: #ffffff;
-  --success: #059669;
-  --warning: #b45309;
-  --danger: #e11d48;
-  --seg-active: rgb(255 255 255 / 0.95);
-  --orb-tail: #a5b4fc;
-  --tone-blue: #0ea5e9;
-  --tone-green: #10b981;
-  --tone-violet: #8b5cf6;
-  --tone-orange: #f97316;
-  --chart-1: #6366f1;
-  --chart-2: #06b6d4;
+  --success: #16a34a;
+  --warning: #c27803;
+  --danger: #dc2626;
+  --seg-active: rgb(255 255 255 / 0.96);
+  --orb-tail: #93c5fd;
+  --tone-blue: #2f7bf6;
+  --tone-green: #16a34a;
+  --tone-violet: #7c5cf6;
+  --tone-orange: #ea7a12;
+  --chart-1: #2f7bf6;
+  --chart-2: #16a34a;
   --chart-3: #f59e0b;
-  --chart-4: #d946ef;
-  --scrim: rgb(15 20 48 / 0.28);
-  --glass: rgb(255 255 255 / 0.72);
-  --glow: rgb(99 102 241 / 0.35);
-  --neon: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-  --backdrop: url("/bg/futur-light.svg");
-  --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 8px 24px -14px rgb(49 46 129 / 0.25);
-  --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 12px 32px -14px rgb(49 46 129 / 0.3);
-  --shadow-lg: 0 30px 70px -20px rgb(49 46 129 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.5);
+  --chart-4: #a855f7;
+  --scrim: rgb(11 18 32 / 0.3);
+  --glass: rgb(255 255 255 / 0.75);
+  --glow: rgb(47 123 246 / 0.35);
+  --blue: linear-gradient(180deg, #5b9dff 0%, #2f7bf6 100%);
+  --veil: linear-gradient(180deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.12));
+  --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 10px 30px -18px rgb(15 23 42 / 0.35);
+  --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 16px 40px -18px rgb(15 23 42 / 0.4);
+  --shadow-lg: 0 30px 70px -24px rgb(15 23 42 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.55);
 }
 
-/* Thème sombre « Néon » — verre fumé sur un horizon spatial. */
+/* Thème sombre — verre fumé façon visionOS, texte blanc, accent bleu. */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #05070f;
-  --bg-2: rgb(16 21 44 / 0.7);
-  --card: rgb(12 16 34 / 0.56);
-  --raised: rgb(148 163 255 / 0.09);
-  --line: rgb(165 180 252 / 0.15);
-  --line-soft: rgb(165 180 252 / 0.08);
-  --fg: #f1f5ff;
-  --fg-2: #aeb8da;
-  --fg-3: #7581a8;
-  --accent: #22d3ee;
-  --accent-2: #c4b5fd;
-  --accent-fg: #04121a;
-  --primary: #e0f7ff;
-  --primary-fg: #050a18;
-  --success: #34d399;
+  --bg: #14161b;
+  --bg-2: rgb(255 255 255 / 0.08);
+  --card: rgb(36 38 46 / 0.46);
+  --raised: rgb(255 255 255 / 0.1);
+  --line: rgb(255 255 255 / 0.16);
+  --line-soft: rgb(255 255 255 / 0.09);
+  --fg: #ffffff;
+  --fg-2: #d5d9e2;
+  --fg-3: #a2a8b8;
+  --accent: #5b9dff;
+  --accent-2: #ffffff;
+  --accent-fg: #ffffff;
+  --primary: #3b82f6;
+  --primary-fg: #ffffff;
+  --success: #4ade80;
   --warning: #fbbf24;
-  --danger: #fb7185;
-  --seg-active: rgb(255 255 255 / 0.12);
-  --orb-tail: #67e8f9;
-  --tone-blue: #38bdf8;
-  --tone-green: #34d399;
+  --danger: #f87171;
+  --seg-active: rgb(255 255 255 / 0.2);
+  --orb-tail: #93c5fd;
+  --tone-blue: #60a5fa;
+  --tone-green: #4ade80;
   --tone-violet: #a78bfa;
   --tone-orange: #fb923c;
-  --chart-1: #22d3ee;
-  --chart-2: #a78bfa;
+  --chart-1: #5b9dff;
+  --chart-2: #4ade80;
   --chart-3: #fbbf24;
-  --chart-4: #f472b6;
-  --scrim: rgb(2 4 12 / 0.6);
-  --glass: rgb(10 14 32 / 0.72);
-  --glow: rgb(34 211 238 / 0.45);
-  --neon: linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #e879f9 100%);
-  --backdrop: url("/bg/futur-dark.svg");
-  --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 10px 30px -14px rgb(0 0 0 / 0.7);
-  --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 14px 36px -14px rgb(0 0 0 / 0.75);
-  --shadow-lg: 0 30px 80px -20px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(165 180 252 / 0.12), 0 0 40px -10px rgb(34 211 238 / 0.25);
+  --chart-4: #c084fc;
+  --scrim: rgb(0 0 0 / 0.5);
+  --glass: rgb(30 32 40 / 0.7);
+  --glow: rgb(91 157 255 / 0.45);
+  --blue: linear-gradient(180deg, #6aa8ff 0%, #3b82f6 100%);
+  --veil: linear-gradient(180deg, rgb(8 10 16 / 0.42), rgb(8 10 16 / 0.22) 40%, rgb(8 10 16 / 0.45));
+  --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 14px 34px -18px rgb(0 0 0 / 0.6);
+  --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 18px 44px -18px rgb(0 0 0 / 0.65);
+  --shadow-lg: 0 30px 80px -24px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+/* Fonds d'écran (choisis dans Paramètres → Apparence ; « océan » par défaut). */
+:root {
+  --wall: url("/bg/ocean.jpg");
+  --wall-m: url("/bg/ocean-m.jpg");
+}
+[data-wallpaper="chalet"] {
+  --wall: url("/bg/chalet.jpg");
+  --wall-m: url("/bg/chalet-m.jpg");
+}
+[data-wallpaper="montagne"] {
+  --wall: url("/bg/montagne.jpg");
+  --wall-m: url("/bg/montagne-m.jpg");
+}
+[data-wallpaper="neon"] {
+  --wall: url("/bg/futur-dark.svg");
+  --wall-m: url("/bg/futur-dark.svg");
+}
+[data-theme="light"][data-wallpaper="neon"] {
+  --wall: url("/bg/futur-light.svg");
+  --wall-m: url("/bg/futur-light.svg");
 }
 
 @theme inline {
@@ -200,8 +222,8 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
 }
 @utility grid-bg {
   background-image:
@@ -217,85 +239,38 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Futur : fond d'horizon, verre dépoli, reflets néon.
+   Verre : photo en fond, panneaux en verre dépoli, accent bleu.
 ------------------------------------------------------------------ */
 .app-backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--bg) var(--backdrop) center bottom / cover no-repeat;
+  background: var(--veil), var(--wall) center / cover no-repeat, var(--bg);
   pointer-events: none;
 }
-/* Lueurs qui respirent lentement par-dessus l'image. */
-.app-backdrop::before,
-.app-backdrop::after {
-  content: "";
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.35;
-  animation: aurora 18s ease-in-out infinite alternate;
-}
-.app-backdrop::before {
-  width: 46vw;
-  height: 46vw;
-  left: -12vw;
-  top: -14vw;
-  background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
-}
-.app-backdrop::after {
-  width: 40vw;
-  height: 40vw;
-  right: -10vw;
-  bottom: 10vh;
-  background: radial-gradient(circle, var(--tone-violet) 0%, transparent 65%);
-  animation-delay: -9s;
-}
-@keyframes aurora {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(6vw, 4vh, 0) scale(1.15); }
+@media (max-width: 767px) {
+  .app-backdrop {
+    background: var(--veil), var(--wall-m) center / cover no-repeat, var(--bg);
+  }
 }
 /* Toutes les cartes deviennent du verre. */
 .bg-card {
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
 }
-/* Bouton principal : dégradé néon. */
+/* Bouton principal : pastille bleue lumineuse. */
 .bg-primary {
-  background-image: var(--neon);
-  box-shadow: 0 6px 22px -8px var(--glow), inset 0 1px 0 rgb(255 255 255 / 0.35);
-}
-[data-theme="dark"] .bg-primary {
-  color: #050a18;
-}
-.text-gradient {
-  background: var(--neon);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background-image: var(--blue);
+  box-shadow: 0 8px 22px -10px var(--glow), inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 .neon-ring {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 24px -6px var(--glow);
-}
-h1,
-.t-display,
-.t-title {
-  font-family: var(--font-display), var(--font-sans);
-  letter-spacing: -0.03em;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 0 0 1px rgb(255 255 255 / 0.14), 0 8px 24px -12px var(--glow);
 }
 @media (max-width: 767px) {
   .surface,
   .bg-card {
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    backdrop-filter: blur(14px) saturate(150%);
-  }
-}
-@utility focus-ring {
-  outline: none;
-  &:focus-visible {
-    box-shadow:
-      0 0 0 2px var(--bg),
-      0 0 0 4px color-mix(in srgb, var(--accent) 70%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
   }
 }
 
@@ -699,14 +674,10 @@ html {
   }
 }
 
-/* Titres de page : dégradé lumineux. */
+/* Titres de page : blanc net sur le verre (sombre), encre profonde (clair). */
 .title-glow {
-  background: linear-gradient(90deg, #1e1b4b 0%, #4f46e5 70%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--fg);
 }
 [data-theme="dark"] .title-glow {
-  background-image: linear-gradient(90deg, #ffffff 0%, #a5f3fc 55%, #c4b5fd 100%);
-  filter: drop-shadow(0 0 18px rgb(34 211 238 / 0.25));
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.35);
 }

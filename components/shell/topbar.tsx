@@ -47,7 +47,7 @@ export function Topbar() {
       </button>
       <Link href="/" className="focus-ring flex shrink-0 items-center gap-2.5 rounded-[8px] pl-1">
         <LogoMark size={26} />
-        <span className="text-gradient font-[family-name:var(--font-display)] text-[16px] font-bold tracking-[-0.02em] max-[359px]:hidden md:max-lg:hidden">Basile OS</span>
+        <span className="text-[15px] font-semibold tracking-[-0.02em] max-[359px]:hidden md:max-lg:hidden">Basile OS</span>
       </Link>
 
       <div className="ml-auto flex min-w-0 items-center gap-2">

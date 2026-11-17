@@ -99,7 +99,7 @@ function Shortcut({ leaf, active, collapsed, onNavigate }: { leaf: NavLeaf; acti
         active ? "font-medium text-fg" : "text-fg-2 hover:bg-raised/70 hover:text-fg",
       )}
     >
-      {active && <motion.span layoutId="nav-pill" className="neon-ring absolute inset-0 rounded-[12px] bg-[linear-gradient(90deg,color-mix(in_srgb,var(--accent)_18%,transparent),color-mix(in_srgb,var(--tone-violet)_8%,transparent))]" transition={SPRING} />}
+      {active && <motion.span layoutId="nav-pill" className="neon-ring absolute inset-0 rounded-[12px] bg-[color-mix(in_srgb,var(--fg)_12%,transparent)]" transition={SPRING} />}
       <Icon className={cn("relative size-[18px] shrink-0", active ? "text-accent drop-shadow-[0_0_6px_var(--glow)]" : "text-fg-3 group-hover:text-fg-2")} strokeWidth={1.75} />
       {!collapsed && <span className="relative truncate">{leaf.label}</span>}
     </Link>

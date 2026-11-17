@@ -164,8 +164,14 @@ function General({ me }: { me: Me }) {
   );
 }
 
-/** « #0071E3 » = accent néon du thème (cyan en sombre, indigo en clair). */
-const ACCENTS = ["#0071E3", "#22D3EE", "#8B5CF6", "#E879F9", "#34D399", "#FBBF24"];
+/** « #0071E3 » = bleu du thème (plus clair en sombre). */
+const ACCENTS = ["#0071E3", "#38BDF8", "#8B5CF6", "#34C759", "#FF9500", "#FF2D55"];
+const WALLPAPERS = [
+  { id: "ocean", label: "Océan", src: "/bg/ocean-m.jpg" },
+  { id: "chalet", label: "Chalet", src: "/bg/chalet-m.jpg" },
+  { id: "montagne", label: "Montagne", src: "/bg/montagne-m.jpg" },
+  { id: "neon", label: "Néon", src: "/bg/futur-dark.svg" },
+];
 
 function Appearance({ prefs }: { prefs: Prefs }) {
   const save = usePatch("/api/preferences");
@@ -189,16 +195,19 @@ function Appearance({ prefs }: { prefs: Prefs }) {
             { v: "system", l: "Système" },
           ].map((t) => (
             <button key={t.v} onClick={() => apply({ theme: t.v })} className={cn("flex flex-col items-center gap-2 rounded-[10px] border p-3 text-[13px]", prefs.theme === t.v ? "border-accent bg-accent/5" : "border-line hover:border-fg-3/40")}>
-              <span className="h-10 w-full rounded-[6px] border border-line bg-cover bg-bottom" style={{ backgroundImage: t.v === "dark" ? "url(/bg/futur-dark.svg)" : t.v === "light" ? "url(/bg/futur-light.svg)" : "linear-gradient(90deg, #05070f 50%, #eef0fb 50%)" }} />
+              <span className="h-10 w-full rounded-[6px] border border-line" style={{ background: t.v === "dark" ? "rgb(36 38 46)" : t.v === "light" ? "#f4f6fa" : "linear-gradient(90deg, rgb(36 38 46) 50%, #f4f6fa 50%)" }} />
               {t.l}
             </button>
           ))}
         </div>
       </Section>
+      <Section title="Fond d'écran">
+        <Wallpapers />
+      </Section>
       <Section title="Couleur d'accent">
         <div className="flex gap-2">
           {ACCENTS.map((c) => (
-            <button key={c} onClick={() => apply({ accent: c })} className={cn("size-8 rounded-full border-2 transition-transform active:scale-90", prefs.accent.toLowerCase() === c.toLowerCase() ? "border-fg" : "border-transparent")} style={{ background: c === "#0071E3" ? "var(--neon)" : c }} aria-label={c === "#0071E3" ? "Néon (par défaut)" : c} title={c === "#0071E3" ? "Néon" : undefined} />
+            <button key={c} onClick={() => apply({ accent: c })} className={cn("size-8 rounded-full border-2 transition-transform active:scale-90", prefs.accent.toLowerCase() === c.toLowerCase() ? "border-fg" : "border-transparent")} style={{ background: c === "#0071E3" ? "var(--blue)" : c }} aria-label={c === "#0071E3" ? "Bleu (par défaut)" : c} />
           ))}
         </div>
       </Section>
@@ -592,5 +601,32 @@ function Security() {
         </div>
       </Section>
     </>
+  );
+}
+
+/** Fond d'écran de l'app : mémorisé sur cet appareil. */
+function Wallpapers() {
+  const [cur, setCur] = useState("ocean");
+  useEffect(() => {
+    try {
+      setCur(localStorage.getItem("bos.wallpaper") || "ocean");
+    } catch {}
+  }, []);
+  const pick = (id: string) => {
+    setCur(id);
+    document.documentElement.dataset.wallpaper = id;
+    try {
+      localStorage.setItem("bos.wallpaper", id);
+    } catch {}
+  };
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {WALLPAPERS.map((w) => (
+        <button key={w.id} onClick={() => pick(w.id)} className={cn("flex flex-col gap-2 rounded-[12px] border p-2 text-[13px] transition-transform active:scale-95", cur === w.id ? "border-accent bg-accent/10" : "border-line hover:border-fg-3/40")}>
+          <span className="h-16 w-full rounded-[8px] bg-cover bg-center" style={{ backgroundImage: `url(${w.src})` }} />
+          {w.label}
+        </button>
+      ))}
+    </div>
   );
 }
