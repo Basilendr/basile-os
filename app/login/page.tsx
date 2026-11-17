@@ -14,7 +14,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const setup = !(await hasAnyUser(db));
   const { next, error } = await searchParams;
   return (
-    <main className="relative isolate grid min-h-dvh place-items-center overflow-hidden bg-bg px-4 py-10">
+    <main className="relative isolate grid min-h-dvh place-items-center overflow-hidden px-4 py-10">
+      <div className="app-backdrop" aria-hidden />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="grid-bg absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="absolute top-[-180px] left-1/2 size-[560px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_65%)] blur-2xl" />

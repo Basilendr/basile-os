@@ -164,7 +164,8 @@ function General({ me }: { me: Me }) {
   );
 }
 
-const ACCENTS = ["#0071E3", "#1D1D1F", "#34C759", "#FF9500", "#AF52DE", "#FF2D55"];
+/** « #0071E3 » = accent néon du thème (cyan en sombre, indigo en clair). */
+const ACCENTS = ["#0071E3", "#22D3EE", "#8B5CF6", "#E879F9", "#34D399", "#FBBF24"];
 
 function Appearance({ prefs }: { prefs: Prefs }) {
   const save = usePatch("/api/preferences");
@@ -172,7 +173,10 @@ function Appearance({ prefs }: { prefs: Prefs }) {
     const html = document.documentElement;
     if (p.theme) html.dataset.theme = p.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : p.theme;
     if (p.density) html.dataset.density = p.density;
-    if (p.accent) html.style.setProperty("--accent", p.accent);
+    if (p.accent) {
+      if (p.accent.toUpperCase() === "#0071E3") html.style.removeProperty("--accent");
+      else html.style.setProperty("--accent", p.accent);
+    }
     save(p, { silent: true });
   };
   return (
@@ -185,7 +189,7 @@ function Appearance({ prefs }: { prefs: Prefs }) {
             { v: "system", l: "Système" },
           ].map((t) => (
             <button key={t.v} onClick={() => apply({ theme: t.v })} className={cn("flex flex-col items-center gap-2 rounded-[10px] border p-3 text-[13px]", prefs.theme === t.v ? "border-accent bg-accent/5" : "border-line hover:border-fg-3/40")}>
-              <span className={cn("h-10 w-full rounded-[6px] border border-line", t.v === "dark" ? "bg-[#09090B]" : t.v === "light" ? "bg-[#fafafa]" : "bg-gradient-to-r from-[#09090B] to-[#fafafa]")} />
+              <span className="h-10 w-full rounded-[6px] border border-line bg-cover bg-bottom" style={{ backgroundImage: t.v === "dark" ? "url(/bg/futur-dark.svg)" : t.v === "light" ? "url(/bg/futur-light.svg)" : "linear-gradient(90deg, #05070f 50%, #eef0fb 50%)" }} />
               {t.l}
             </button>
           ))}
@@ -194,7 +198,7 @@ function Appearance({ prefs }: { prefs: Prefs }) {
       <Section title="Couleur d'accent">
         <div className="flex gap-2">
           {ACCENTS.map((c) => (
-            <button key={c} onClick={() => apply({ accent: c })} className={cn("size-8 rounded-full border-2 transition-transform active:scale-90", prefs.accent.toLowerCase() === c.toLowerCase() ? "border-fg" : "border-transparent")} style={{ background: c }} aria-label={c} />
+            <button key={c} onClick={() => apply({ accent: c })} className={cn("size-8 rounded-full border-2 transition-transform active:scale-90", prefs.accent.toLowerCase() === c.toLowerCase() ? "border-fg" : "border-transparent")} style={{ background: c === "#0071E3" ? "var(--neon)" : c }} aria-label={c === "#0071E3" ? "Néon (par défaut)" : c} title={c === "#0071E3" ? "Néon" : undefined} />
           ))}
         </div>
       </Section>

@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Space_Grotesk } from "next/font/google";
 import { eq } from "drizzle-orm";
 import "./globals.css";
 import { Providers } from "./providers";
 import { currentUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
+
+const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: { default: "Basile OS", template: "%s · Basile OS" },
@@ -21,8 +24,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
+    { media: "(prefers-color-scheme: light)", color: "#eef0fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#05070f" },
   ],
 };
 
@@ -41,8 +44,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="fr"
       data-theme={theme === "system" ? undefined : theme}
       data-density={density}
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
-      style={{ ["--accent" as string]: accent }}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable}`}
+      // L'ancien bleu par défaut laisse place à l'accent néon du thème.
+      style={accent.toUpperCase() === "#0071E3" ? undefined : { ["--accent" as string]: accent }}
       suppressHydrationWarning
     >
       <body>

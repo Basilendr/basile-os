@@ -76,7 +76,8 @@ function ShellInner({ children }: { children: ReactNode }) {
   }, [openPalette, paletteOpen, setAssistantOpen, assistantOpen, router, openCreate]);
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-bg">
+    <div className="relative isolate flex h-dvh flex-col overflow-hidden">
+      <div className="app-backdrop" aria-hidden />
       <Topbar />
       <div className="flex min-h-0 flex-1 gap-3 p-2 md:p-3">
         <Suspense>

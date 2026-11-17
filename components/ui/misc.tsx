@@ -142,7 +142,7 @@ export function PageHeader({ title, description, actions, children, crumbs }: { 
       </nav>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="t-title">{title}</h1>
+          <h1 className="t-title title-glow">{title}</h1>
           {description && <p className="t-sub mt-1">{description}</p>}
         </div>
         {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
