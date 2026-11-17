@@ -48,7 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body>
         {/* Fond d'écran choisi sur cet appareil, appliqué avant l'affichage. */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var w=localStorage.getItem("bos.wallpaper");if(w)document.documentElement.dataset.wallpaper=w}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var w=localStorage.getItem("bos.wallpaper");if(w&&w!=="neon")document.documentElement.dataset.wallpaper=w}catch(e){}` }} />
         {theme === "system" && (
           <script
             dangerouslySetInnerHTML={{

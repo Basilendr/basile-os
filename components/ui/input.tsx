@@ -3,7 +3,7 @@ import { forwardRef, type InputHTMLAttributes, type ReactNode, type SelectHTMLAt
 import { cn } from "@/lib/utils";
 
 const base =
-  "w-full rounded-[10px] border border-line bg-card px-3 text-[13.5px] text-fg placeholder:text-fg-3 transition-colors duration-100 hover:border-[color-mix(in_srgb,var(--line)_60%,var(--fg-3))] focus:border-accent focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--accent)_22%,transparent)] disabled:opacity-50";
+  "w-full rounded-[12px] border border-line bg-card px-3 text-[13.5px] text-fg placeholder:text-fg-3 transition-colors duration-100 hover:border-[color-mix(in_srgb,var(--line)_60%,var(--fg-3))] focus:border-accent focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--accent)_22%,transparent)] disabled:opacity-50";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...p }, ref) {
   return <input ref={ref} className={cn(base, "h-9", className)} {...p} />;

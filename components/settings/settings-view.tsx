@@ -170,7 +170,6 @@ const WALLPAPERS = [
   { id: "ocean", label: "Océan", src: "/bg/ocean-m.jpg" },
   { id: "chalet", label: "Chalet", src: "/bg/chalet-m.jpg" },
   { id: "montagne", label: "Montagne", src: "/bg/montagne-m.jpg" },
-  { id: "neon", label: "Néon", src: "/bg/futur-dark.svg" },
 ];
 
 function Appearance({ prefs }: { prefs: Prefs }) {
@@ -620,7 +619,7 @@ function Wallpapers() {
     } catch {}
   };
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-3 gap-3">
       {WALLPAPERS.map((w) => (
         <button key={w.id} onClick={() => pick(w.id)} className={cn("flex flex-col gap-2 rounded-[12px] border p-2 text-[13px] transition-transform active:scale-95", cur === w.id ? "border-accent bg-accent/10" : "border-line hover:border-fg-3/40")}>
           <span className="h-16 w-full rounded-[8px] bg-cover bg-center" style={{ backgroundImage: `url(${w.src})` }} />

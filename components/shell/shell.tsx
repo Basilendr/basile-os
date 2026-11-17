@@ -89,7 +89,7 @@ function ShellInner({ children }: { children: ReactNode }) {
             <div className="fixed inset-0 z-[70] md:hidden">
               <motion.div className="absolute inset-0 bg-[var(--scrim)]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileNavOpen(false)} />
               <motion.aside
-                className="absolute inset-y-0 left-0 flex w-[284px] max-w-[85vw] flex-col border-r border-line bg-card pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+                className="absolute inset-y-2 left-2 flex w-[284px] max-w-[85vw] flex-col overflow-hidden rounded-[28px] border border-line bg-card pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-lg)]"
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
@@ -115,7 +115,7 @@ function ShellInner({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        <main id="main" className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-[20px] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <main id="main" className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-[20px] pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
           {children}
         </main>
       </div>
@@ -140,7 +140,7 @@ function MobileTabBar() {
   return (
     <>
       <InstallHint />
-      <nav className="glass fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-line-soft pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Navigation mobile">
+      <nav className="glass-pill fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+8px)] z-40 flex h-[62px] items-center gap-0.5 px-1.5 md:hidden" aria-label="Navigation mobile">
         {tabs.map((t) => {
           const active = isActive(pathname, t.href);
           return (
@@ -148,15 +148,15 @@ function MobileTabBar() {
               key={t.href}
               href={t.href}
               aria-current={active ? "page" : undefined}
-              className={cn("flex h-[58px] flex-1 flex-col items-center justify-center gap-1 text-[10.5px] font-medium transition-transform active:scale-90", active ? "text-accent" : "text-fg-3")}
+              className={cn("flex h-[50px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-medium transition-[transform,background-color] active:scale-90", active ? "bg-[var(--seg-active)] text-[var(--seg-active-fg)] shadow-[0_4px_14px_-4px_rgb(0_0_0/0.45)]" : "text-fg-2")}
             >
-              <t.icon className="size-[22px]" strokeWidth={active ? 2.2 : 1.8} />
+              <t.icon className="size-[20px]" strokeWidth={active ? 2.2 : 1.8} />
               {t.label}
             </Link>
           );
         })}
-        <button onClick={() => setMobileNavOpen(true)} className="flex h-[58px] flex-1 flex-col items-center justify-center gap-1 text-[10.5px] font-medium text-fg-3 transition-transform active:scale-90">
-          <LayoutGrid className="size-[22px]" strokeWidth={1.8} />
+        <button onClick={() => setMobileNavOpen(true)} className="flex h-[50px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-medium text-fg-2 transition-transform active:scale-90">
+          <LayoutGrid className="size-[20px]" strokeWidth={1.8} />
           Plus
         </button>
       </nav>
@@ -181,7 +181,7 @@ function InstallHint() {
     } catch {}
   };
   return (
-    <div className="fixed inset-x-2 bottom-[calc(66px+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-[16px] border border-line bg-card px-3.5 py-2.5 shadow-[var(--shadow-lg)] md:hidden">
+    <div className="fixed inset-x-2 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-[16px] border border-line bg-card px-3.5 py-2.5 shadow-[var(--shadow-lg)] md:hidden">
       <Share className="size-5 shrink-0 text-accent" />
       <p className="min-w-0 flex-1 text-[12.5px] leading-snug">
         Installe l'app : touche <b>Partager</b> puis <b>Sur l'écran d'accueil</b>.

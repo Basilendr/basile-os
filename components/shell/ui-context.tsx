@@ -46,10 +46,11 @@ export function UIProvider({ me, children }: { me: Me; children: ReactNode }) {
   const [assistantSeed, setAssistantSeed] = useState<string | null>(null);
   const [create, setCreate] = useState<UI["create"]>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(me.prefs.sidebarCollapsed);
+  // Par défaut, le menu est un dock d'icônes flottant ; le bouton menu l'élargit (choix mémorisé sur l'appareil).
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   useEffect(() => {
     try {
-      const v = localStorage.getItem("bos.sidebar");
+      const v = localStorage.getItem("bos.dock");
       if (v !== null) setSidebarCollapsed(v === "1");
     } catch {}
   }, []);
@@ -57,7 +58,7 @@ export function UIProvider({ me, children }: { me: Me; children: ReactNode }) {
     setSidebarCollapsed((c) => {
       const next = !c;
       try {
-        localStorage.setItem("bos.sidebar", next ? "1" : "0");
+        localStorage.setItem("bos.dock", next ? "1" : "0");
       } catch {}
       fetch("/api/preferences", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ sidebarCollapsed: next }) }).catch(() => null);
       return next;

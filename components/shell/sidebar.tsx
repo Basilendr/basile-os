@@ -42,17 +42,17 @@ export function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; 
   }, [activeFolder]);
 
   return (
-    <div className="flex h-full flex-col">
-      <nav className={cn("min-h-0 flex-1 overflow-y-auto pt-3 pb-2", collapsed ? "px-2" : "px-3")} aria-label="Navigation principale">
-        <ul className="flex flex-col gap-0.5">
+    <div className={cn("flex flex-col", !collapsed && "h-full")}>
+      <nav className={cn(collapsed ? "flex flex-col items-center px-2 pt-2.5 pb-1.5" : "min-h-0 flex-1 overflow-y-auto px-3 pt-3 pb-2")} aria-label="Navigation principale">
+        <ul className={cn("flex flex-col", collapsed ? "items-center gap-1.5" : "gap-0.5")}>
           {SHORTCUTS.map((s) => (
             <li key={s.href}>
               <Shortcut leaf={s} active={active === s.href} collapsed={collapsed} onNavigate={onNavigate} />
             </li>
           ))}
         </ul>
-        {collapsed ? <div className="mx-3 my-3 h-px bg-line-soft" /> : <p className="t-label px-3 pt-5 pb-2">Dossiers</p>}
-        <ul className="flex flex-col gap-1">
+        {collapsed ? <div className="my-2.5 h-px w-7 bg-line" /> : <p className="t-label px-3 pt-5 pb-2">Dossiers</p>}
+        <ul className={cn("flex flex-col", collapsed ? "items-center gap-1.5" : "gap-1")}>
           {FOLDERS.map((f) =>
             collapsed ? (
               <li key={f.id}>
@@ -66,18 +66,19 @@ export function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; 
           )}
         </ul>
       </nav>
-      <div className={cn("shrink-0 border-t border-line-soft py-2.5", collapsed ? "px-2" : "px-3")}>
+      <div className={cn("shrink-0", collapsed ? "flex flex-col items-center gap-1.5 px-2 pt-1 pb-2.5" : "border-t border-line-soft px-3 py-2.5")}>
+        {collapsed && <div className="mb-1 h-px w-7 bg-line" />}
         <Shortcut leaf={{ href: "/settings", label: "Paramètres", icon: Settings }} active={active === "/settings" || active === "/integrations"} collapsed={collapsed} onNavigate={onNavigate} />
         <button
           onClick={async () => {
             await api.post("/api/auth/logout").catch(() => null);
             window.location.href = "/login";
           }}
-          title={collapsed ? "Déconnexion" : undefined}
-          className={cn("focus-ring flex h-9 w-full items-center gap-3 rounded-[11px] text-[13.5px] text-fg-2 transition-colors hover:bg-raised/70 hover:text-fg", collapsed ? "justify-center" : "px-3")}
+          aria-label="Déconnexion"
+          className={cn("focus-ring group relative flex items-center gap-3 text-[13.5px] text-fg-2 transition-colors hover:text-fg", collapsed ? "size-11 justify-center rounded-full hover:bg-raised" : "h-9 w-full rounded-[11px] px-3 hover:bg-raised/70")}
         >
           <LogOut className="size-[17px] text-fg-3" strokeWidth={1.75} />
-          {!collapsed && "Déconnexion"}
+          {collapsed ? <Tip label="Déconnexion" /> : "Déconnexion"}
         </button>
       </div>
     </div>
@@ -90,18 +91,24 @@ function Shortcut({ leaf, active, collapsed, onNavigate }: { leaf: NavLeaf; acti
     <Link
       href={leaf.href}
       onClick={onNavigate}
-      title={collapsed ? leaf.label : undefined}
       aria-label={collapsed ? leaf.label : undefined}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "focus-ring group relative flex h-10 items-center gap-3 rounded-[12px] text-[14px] transition-colors duration-100",
-        collapsed ? "justify-center" : "px-3",
-        active ? "font-medium text-fg" : "text-fg-2 hover:bg-raised/70 hover:text-fg",
+        "focus-ring group relative flex items-center gap-3 text-[14px] transition-colors duration-100",
+        collapsed ? "size-11 justify-center rounded-full" : "h-10 rounded-[12px] px-3",
+        active ? "font-medium" : "text-fg-2 hover:bg-raised hover:text-fg",
+        active && !collapsed && "text-fg",
       )}
     >
-      {active && <motion.span layoutId="nav-pill" className="neon-ring absolute inset-0 rounded-[12px] bg-[color-mix(in_srgb,var(--fg)_12%,transparent)]" transition={SPRING} />}
-      <Icon className={cn("relative size-[18px] shrink-0", active ? "text-accent drop-shadow-[0_0_6px_var(--glow)]" : "text-fg-3 group-hover:text-fg-2")} strokeWidth={1.75} />
-      {!collapsed && <span className="relative truncate">{leaf.label}</span>}
+      {active && (
+        <motion.span
+          layoutId="nav-pill"
+          className={cn("absolute inset-0", collapsed ? "rounded-full bg-[var(--seg-active)] shadow-[0_6px_18px_-6px_rgb(0_0_0/0.5)]" : "rounded-[12px] bg-raised shadow-[inset_0_0_0_1px_var(--line)]")}
+          transition={SPRING}
+        />
+      )}
+      <Icon className={cn("relative size-[18px] shrink-0", active ? (collapsed ? "text-[var(--seg-active-fg)]" : "text-accent") : "text-fg-3 group-hover:text-fg-2")} strokeWidth={1.8} />
+      {collapsed ? <Tip label={leaf.label} /> : <span className="relative truncate">{leaf.label}</span>}
     </Link>
   );
 }
@@ -180,7 +187,7 @@ function RailFolder({ folder, active, highlighted, onNavigate }: { folder: NavFo
   useLayoutEffect(() => {
     if (!open || !btn.current) return;
     const r = btn.current.getBoundingClientRect();
-    setPos({ top: Math.min(r.top - 8, window.innerHeight - 220), left: r.right + 12 });
+    setPos({ top: Math.min(r.top - 8, window.innerHeight - 220), left: r.right + 18 });
   }, [open]);
   useEffect(() => {
     if (!open) return;
@@ -202,11 +209,11 @@ function RailFolder({ folder, active, highlighted, onNavigate }: { folder: NavFo
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-label={folder.label}
-        title={folder.label}
-        className={cn("focus-ring grid h-11 w-full place-items-center rounded-[12px] transition-colors", open || highlighted ? "bg-[var(--folder-bg)]" : "hover:bg-raised/70")}
-        style={{ "--folder-bg": t.soft } as React.CSSProperties}
+        className={cn("focus-ring group relative grid size-11 place-items-center rounded-full transition-colors", open || highlighted ? "bg-[var(--folder-bg)] shadow-[inset_0_0_0_1px_var(--folder-ring)]" : "hover:bg-raised")}
+        style={{ "--folder-bg": t.soft, "--folder-ring": t.strong } as React.CSSProperties}
       >
-        <FolderGlyph tone={folder.tone} open={open} size={28} />
+        <FolderGlyph tone={folder.tone} open={open} size={24} />
+        {!open && <Tip label={folder.label} />}
       </button>
       {typeof document !== "undefined" &&
         createPortal(
@@ -220,7 +227,7 @@ function RailFolder({ folder, active, highlighted, onNavigate }: { folder: NavFo
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.96, x: -4 }}
                 transition={SPRING}
-                className="fixed z-[80] w-[264px] origin-left rounded-[18px] border border-line bg-card p-3 shadow-[var(--shadow-lg)]"
+                className="fixed z-[80] w-[264px] origin-left rounded-[24px] border border-line bg-card p-3 shadow-[var(--shadow-lg)]"
                 style={{ top: pos.top, left: pos.left }}
               >
                 <div className="mb-2.5 flex items-center gap-2.5 px-1">
@@ -239,5 +246,17 @@ function RailFolder({ folder, active, highlighted, onNavigate }: { folder: NavFo
           document.body,
         )}
     </>
+  );
+}
+
+/** Bulle qui nomme une icône du dock au survol. */
+function Tip({ label }: { label: string }) {
+  return (
+    <span
+      role="presentation"
+      className="pointer-events-none absolute top-1/2 left-full z-50 ml-4 -translate-y-1/2 -translate-x-1 rounded-full border border-line bg-[var(--glass)] px-3 py-1 text-[12px] font-medium whitespace-nowrap text-fg opacity-0 shadow-[var(--shadow-md)] backdrop-blur-2xl transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100"
+    >
+      {label}
+    </span>
   );
 }

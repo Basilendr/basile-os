@@ -12,7 +12,7 @@
   color-scheme: light;
   --bg: #e9edf3;
   --bg-2: rgb(255 255 255 / 0.6);
-  --card: rgb(255 255 255 / 0.66);
+  --card: rgb(255 255 255 / 0.78);
   --raised: rgb(15 23 42 / 0.05);
   --line: rgb(15 23 42 / 0.1);
   --line-soft: rgb(15 23 42 / 0.06);
@@ -27,7 +27,8 @@
   --success: #16a34a;
   --warning: #c27803;
   --danger: #dc2626;
-  --seg-active: rgb(255 255 255 / 0.96);
+  --seg-active: #0b1220;
+  --seg-active-fg: #ffffff;
   --orb-tail: #93c5fd;
   --tone-blue: #2f7bf6;
   --tone-green: #16a34a;
@@ -41,7 +42,7 @@
   --glass: rgb(255 255 255 / 0.75);
   --glow: rgb(47 123 246 / 0.35);
   --blue: linear-gradient(180deg, #5b9dff 0%, #2f7bf6 100%);
-  --veil: linear-gradient(180deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.12));
+  --veil: linear-gradient(180deg, rgb(10 14 22 / 0.18), rgb(10 14 22 / 0.08) 45%, rgb(10 14 22 / 0.22));
   --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 10px 30px -18px rgb(15 23 42 / 0.35);
   --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 16px 40px -18px rgb(15 23 42 / 0.4);
   --shadow-lg: 0 30px 70px -24px rgb(15 23 42 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.55);
@@ -52,9 +53,9 @@
   color-scheme: dark;
   --bg: #14161b;
   --bg-2: rgb(255 255 255 / 0.08);
-  --card: rgb(36 38 46 / 0.46);
-  --raised: rgb(255 255 255 / 0.1);
-  --line: rgb(255 255 255 / 0.16);
+  --card: rgb(26 28 36 / 0.66);
+  --raised: rgb(255 255 255 / 0.08);
+  --line: rgb(255 255 255 / 0.13);
   --line-soft: rgb(255 255 255 / 0.09);
   --fg: #ffffff;
   --fg-2: #d5d9e2;
@@ -67,7 +68,8 @@
   --success: #4ade80;
   --warning: #fbbf24;
   --danger: #f87171;
-  --seg-active: rgb(255 255 255 / 0.2);
+  --seg-active: #ffffff;
+  --seg-active-fg: #111318;
   --orb-tail: #93c5fd;
   --tone-blue: #60a5fa;
   --tone-green: #4ade80;
@@ -81,7 +83,7 @@
   --glass: rgb(30 32 40 / 0.7);
   --glow: rgb(91 157 255 / 0.45);
   --blue: linear-gradient(180deg, #6aa8ff 0%, #3b82f6 100%);
-  --veil: linear-gradient(180deg, rgb(8 10 16 / 0.42), rgb(8 10 16 / 0.22) 40%, rgb(8 10 16 / 0.45));
+  --veil: linear-gradient(180deg, rgb(6 8 13 / 0.62), rgb(6 8 13 / 0.48) 45%, rgb(6 8 13 / 0.7));
   --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 14px 34px -18px rgb(0 0 0 / 0.6);
   --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 18px 44px -18px rgb(0 0 0 / 0.65);
   --shadow-lg: 0 30px 80px -24px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.12);
@@ -99,14 +101,6 @@
 [data-wallpaper="montagne"] {
   --wall: url("/bg/montagne.jpg");
   --wall-m: url("/bg/montagne-m.jpg");
-}
-[data-wallpaper="neon"] {
-  --wall: url("/bg/futur-dark.svg");
-  --wall-m: url("/bg/futur-dark.svg");
-}
-[data-theme="light"][data-wallpaper="neon"] {
-  --wall: url("/bg/futur-light.svg");
-  --wall-m: url("/bg/futur-light.svg");
 }
 
 @theme inline {
@@ -132,7 +126,7 @@
   --radius-sm: 7px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-xl: 22px;
 }
 
 /* Densité de l'interface */
@@ -222,8 +216,8 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
 }
 @utility grid-bg {
   background-image:
@@ -255,8 +249,8 @@ body {
 }
 /* Toutes les cartes deviennent du verre. */
 .bg-card {
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
 }
 /* Bouton principal : pastille bleue lumineuse. */
 .bg-primary {
@@ -679,5 +673,43 @@ html {
   color: var(--fg);
 }
 [data-theme="dark"] .title-glow {
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.35);
+  text-shadow: 0 2px 16px rgb(0 0 0 / 0.45);
+}
+.title-glow {
+  font-size: 1.75rem;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+}
+
+/* Composants de verre : dans une couche, pour que les utilitaires (hidden, md:grid…) gardent la main. */
+@layer components {
+/* Bouton rond en verre (barre du haut, dock). */
+.glass-btn {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  color: var(--fg-2);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+}
+.glass-btn:hover {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--card) 70%, var(--fg) 8%);
+}
+.glass-btn:active {
+  transform: scale(0.92);
+}
+/* Capsule de verre (groupes de boutons). */
+.glass-pill {
+  border-radius: 9999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
+}
 }
