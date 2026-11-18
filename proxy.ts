@@ -15,8 +15,8 @@ export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   // Le service worker (notifications) doit rester accessible sans session.
   if (pathname === "/sw.js") return NextResponse.next();
-  // Pages légales : lisibles sans compte.
-  if (pathname === "/mentions-legales" || pathname === "/confidentialite" || pathname.startsWith("/opengraph-image")) return NextResponse.next();
+  // Image d'aperçu des liens partagés : lisible sans compte.
+  if (pathname.startsWith("/opengraph-image")) return NextResponse.next();
   if (!has && pathname !== "/login") {
     const url = req.nextUrl.clone();
     url.pathname = "/login";

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -34,15 +33,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               Mot de passe oublié : arrête le serveur puis lance <code className="font-mono">npm run account:password -- "nouveau-mot-de-passe"</code>.
             </>
           )}
-        </p>
-        <p className="t-meta mt-4 text-center">
-          <Link href="/mentions-legales" className="underline-offset-2 hover:underline">
-            Mentions légales
-          </Link>
-          {" · "}
-          <Link href="/confidentialite" className="underline-offset-2 hover:underline">
-            Confidentialité
-          </Link>
         </p>
       </div>
     </main>
