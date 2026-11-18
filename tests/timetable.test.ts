@@ -235,7 +235,7 @@ describe("agent emploi du temps et agenda Google", () => {
     expect(await syncSchoolCalendar(db, userId)).toMatchObject({ state: "synced", created: 2, removed: 0 });
     expect(google.filter((r) => r.method === "DELETE" && r.url.includes("/calendars/primary/events/"))).toHaveLength(2);
     const titles = google.filter((r) => r.method === "POST" && r.url.includes("/events")).map((r) => r.body?.summary);
-    expect(titles.sort()).toEqual(["Évaluation · SES — Contrôle marché", "⚠︎ Étude (SES)"]);
+    expect(titles.sort()).toEqual(["Évaluation · SES : Contrôle marché", "⚠︎ Étude (SES)"]);
     expect(google.filter((r) => r.method === "POST" && r.url.includes("/events")).every((r) => r.url.includes("ecole%40group"))).toBe(true);
     // Deuxième passage : rien n'a changé, aucune écriture.
     google.length = 0;

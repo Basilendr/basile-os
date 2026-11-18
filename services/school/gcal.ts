@@ -65,7 +65,7 @@ export async function desiredEvents(db: DB, userId: string, from: string, to: st
       key: `hw:${h.id}`,
       startAt: new Date(`${h.dueDate}T00:00:00Z`),
       event: {
-        summary: `${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? `, ${h.title}` : ""}`.slice(0, 200),
+        summary: `${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? ` : ${h.title}` : ""}`.slice(0, 200),
         description: h.title,
         colorId: h.isTest ? "11" : "5",
         start: { date: h.dueDate },
