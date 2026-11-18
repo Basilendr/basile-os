@@ -64,6 +64,8 @@ export type GenInput = {
   weak?: string[];
   /** Langue vivante du quiz, quand tous ses cours en relèvent. */
   lang?: string | null;
+  /** Caractères de cours envoyés (par défaut : BUDGET, au moins 6 000 par document). */
+  budget?: number;
 };
 
 export type Generated = { title: string; subject: string | null; questions: QuizQuestion[]; keyPoints: string[]; notions: number };
@@ -144,7 +146,7 @@ function fit(text: string, max: number) {
 const ofLang = (label: string) => (/^[aeiouéè]/i.test(label) ? `d'${label.toLowerCase()}` : `de ${label.toLowerCase()}`);
 
 export function buildPrompt(i: GenInput) {
-  const per = Math.max(6_000, Math.min(40_000, Math.floor(BUDGET / Math.max(1, i.docs.length))));
+  const per = i.budget ? Math.floor(i.budget / Math.max(1, i.docs.length)) : Math.max(6_000, Math.min(40_000, Math.floor(BUDGET / Math.max(1, i.docs.length))));
   const docs = i.docs
     .map((d) => {
       const fresh = i.kind === "daily" && d.fresh ? `\n<nouveau_aujourdhui>\n${fit(d.fresh, Math.floor(per / 2))}\n</nouveau_aujourdhui>` : "";
@@ -172,7 +174,7 @@ export async function generateQuiz(db: DB, userId: string, i: GenInput): Promise
   const ai = await aiSettings(db, userId);
   if (!ai.configured) throw new AppError("not_configured", "L'IA n'est pas configurée : ajoute une clé dans les réglages pour créer des quiz.");
   const [account] = await db.select({ c: schema.schoolAccounts.className }).from(schema.schoolAccounts).where(eq(schema.schoolAccounts.userId, userId));
-  const call = () => completeJson({ provider: ai.provider, model: ai.model, system: SYSTEM(account?.c), prompt: buildPrompt(i), schema: QuizZ, effort: "low", timeoutMs: 180_000, task: "quiz" });
+  const call = () => completeJson({ provider: ai.provider, model: ai.model, system: SYSTEM(account?.c), prompt: buildPrompt(i), schema: QuizZ, effort: "low", timeoutMs: 120_000, task: "quiz", promptFor: { groq: buildPrompt({ ...i, count: Math.min(i.count, 10), min: undefined, budget: 5_000 }) } });
   // Une réponse mal formée est le plus souvent passagère : un second essai suffit.
   const r = await call().catch((e) => {
     if (e instanceof AppError && e.message.includes("mal formée")) return call();

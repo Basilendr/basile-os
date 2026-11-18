@@ -8,3 +8,6 @@ export const POST = route({ rate: [6, 60_000] }, async ({ db, user }) => {
   if (r.pending.length) after(() => finishPending(db, user.id, r.pending));
   return { pending: r.pending.length };
 });
+
+/** La fabrication du quiz continue après la réponse : jusqu’à 5 minutes. */
+export const maxDuration = 300;

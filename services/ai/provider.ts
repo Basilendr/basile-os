@@ -75,12 +75,18 @@ async function routed<T>(task: AiTask, preferred: { provider: ProviderName; mode
   const chain = routeFor(task, preferred);
   if (!chain.length) requireProvider(preferred.provider);
   let last: unknown;
+  let saturated = false;
   for (const [i, p] of chain.entries()) {
     try {
       return await run(p);
     } catch (e) {
       last = e;
-      if (i === chain.length - 1 || !shouldFallback(e) || !canRetry()) throw e;
+      if (i === chain.length - 1 || !shouldFallback(e) || !canRetry()) {
+        // Plusieurs IA essayées sans succès, dont une saturée : un message simple plutôt que l'erreur technique de la dernière.
+        if (i > 0 && saturated && !(e instanceof AppError && e.message.includes("mal formée"))) throw new AppError("rate_limited", "Les IA gratuites sont saturées en ce moment : réessaie dans quelques minutes.");
+        throw e;
+      }
+      if (e instanceof AppError && (e.code === "rate_limited" || /surchargé|quota/i.test(e.message))) saturated = true;
       log.warn("ai.route_fallback", { task, from: p.provider, to: chain[i + 1].provider, error: String(e).slice(0, 200) });
     }
   }
@@ -226,10 +232,11 @@ async function openaiChat(body: Record<string, unknown>, signal?: AbortSignal, p
       let model = body.model !== fallback ? fallback : String(body.model);
       if (model !== body.model) log.warn("ai.gemini_fallback", { from: String(body.model) });
       let last: unknown = e;
-      for (const wait of [0, 4000, 8000]) {
+      // Les nouvelles tentatives sont plus courtes, pour laisser à l'IA suivante le temps de répondre.
+      for (const wait of [0, 4000]) {
         if (wait) await new Promise((r) => setTimeout(r, wait));
         try {
-          return await compatCall({ ...body, model }, signal, provider, timeoutMs);
+          return await compatCall({ ...body, model }, signal, provider, Math.min(timeoutMs, 60_000));
         } catch (e2) {
           last = e2;
           if (!busy(e2)) throw e2;
@@ -257,6 +264,8 @@ async function compatCall(body: Record<string, unknown>, signal: AbortSignal | u
   });
   const raw = await res.json().catch(() => null);
   const d = Array.isArray(raw) ? raw[0] : raw; // Gemini peut renvoyer l'erreur dans un tableau
+  // Groq : JSON produit invalide (souvent passager) → même message que les autres réponses mal formées, qui sont réessayées.
+  if (res.status === 400 && d?.error?.code === "json_validate_failed") throw new AppError("integration_error", "Réponse IA mal formée.", { status: 400 });
   if (!res.ok)
     throw new AppError(
       res.status === 429 ? "rate_limited" : "integration_error",
@@ -306,11 +315,16 @@ export async function complete(o: { provider: ProviderName; model: string; syste
 
 /** Sortie structurée validée par Zod (outputs structurés côté Anthropic, JSON mode côté OpenAI). */
 /** Taille maximale (en caractères) de la consigne envoyée à Groq. */
-const GROQ_PROMPT_MAX = 10_000;
+const GROQ_PROMPT_MAX = 7_000;
 
-export async function completeJson<T extends z.ZodType>(o: { provider: ProviderName; model: string; system: string; prompt: string; schema: T; effort?: "low" | "medium" | "high"; timeoutMs?: number; task?: AiTask }): Promise<{ data: z.infer<T>; usage: Usage }> {
-  // Groq gratuit refuse plus de 8 000 jetons par minute : un long cours est raccourci (début et fin gardés) plutôt que refusé.
-  const forProvider = (p: ProviderName) => (p === "groq" && o.prompt.length > GROQ_PROMPT_MAX ? { ...o, prompt: `${o.prompt.slice(0, Math.floor(GROQ_PROMPT_MAX * 0.7))}\n[…]\n${o.prompt.slice(-Math.floor(GROQ_PROMPT_MAX * 0.3))}` } : o);
+export async function completeJson<T extends z.ZodType>(o: { provider: ProviderName; model: string; system: string; prompt: string; schema: T; effort?: "low" | "medium" | "high"; timeoutMs?: number; task?: AiTask; promptFor?: Partial<Record<ProviderName, string>> }): Promise<{ data: z.infer<T>; usage: Usage }> {
+  // Une consigne plus légère peut être prévue pour une IA donnée (Groq gratuit : 8 000 jetons par minute, réponse comprise).
+  // Sinon, pour Groq, un long cours est raccourci (début et fin gardés) plutôt que refusé.
+  const forProvider = (p: ProviderName) => {
+    const prompt = o.promptFor?.[p] ?? o.prompt;
+    if (p === "groq" && prompt.length > GROQ_PROMPT_MAX) return { ...o, prompt: `${prompt.slice(0, Math.floor(GROQ_PROMPT_MAX * 0.7))}\n[…]\n${prompt.slice(-Math.floor(GROQ_PROMPT_MAX * 0.3))}` };
+    return { ...o, prompt };
+  };
   return routed(o.task ?? "writing", o, (p) => completeJsonWith({ ...forProvider(p.provider), ...p }));
 }
 
@@ -339,8 +353,9 @@ async function completeJsonWith<T extends z.ZodType>(o: { provider: ProviderName
     }
   }
   const gemini = o.provider === "gemini";
-  // Seul OpenAI applique un schéma strict ; les autres reçoivent le schéma dans la consigne et répondent en JSON.
-  const loose = o.provider !== "openai";
+  // OpenAI et Groq (modèles gpt-oss) appliquent un schéma strict ; les autres reçoivent le schéma dans la consigne et répondent en JSON.
+  // Sur Groq, le schéma strict évite aussi d'envoyer le schéma dans la consigne (limite gratuite de 8 000 jetons par minute).
+  const loose = !(o.provider === "openai" || (o.provider === "groq" && o.model.startsWith("openai/")));
   const body = {
     model: o.model,
     messages: [
@@ -348,6 +363,8 @@ async function completeJsonWith<T extends z.ZodType>(o: { provider: ProviderName
       { role: "user", content: o.prompt },
     ],
     response_format: loose ? { type: "json_object" } : { type: "json_schema", json_schema: { name: "result", schema: jsonSchema, strict: true } },
+    // Groq gratuit compte la consigne et la réponse dans sa limite de 8 000 jetons par minute : la réponse prend ce qui reste.
+    ...(o.provider === "groq" ? { max_completion_tokens: Math.max(1_500, 7_800 - Math.ceil((o.system.length + o.prompt.length + (loose ? JSON.stringify(jsonSchema).length : 0)) / 3)), reasoning_effort: "low" } : {}),
   };
   const provider = o.provider as Compat;
   // Gemini : l'effort de réflexion borne le temps de réponse ; un modèle qui refuse ce réglage (400) est rappelé sans.

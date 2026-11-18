@@ -10,3 +10,6 @@ export const POST = route({ body: CustomInput, rate: [10, 60_000] }, async ({ db
   after(() => runGeneration(db, user.id, r.id));
   return r;
 });
+
+/** La fabrication du quiz continue après la réponse : jusqu’à 5 minutes. */
+export const maxDuration = 300;
