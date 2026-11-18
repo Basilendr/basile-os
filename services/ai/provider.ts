@@ -215,14 +215,28 @@ function mapError(err: unknown): Error {
 type OAIMessage = { role: "system" | "user" | "assistant" | "tool"; content: string | null; tool_calls?: { id: string; type: "function"; function: { name: string; arguments: string } }[]; tool_call_id?: string };
 
 async function openaiChat(body: Record<string, unknown>, signal?: AbortSignal, provider: Compat = "openai", timeoutMs = 90_000): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const busy = (e: unknown) => e instanceof AppError && [429, 503, 504].includes((e.details as { status?: number } | undefined)?.status ?? 0);
   try {
     return await compatCall(body, signal, provider, timeoutMs);
   } catch (e) {
-    // Gemini gratuit : modèle saturé (503), sans réponse (504) ou quota du modèle atteint (429) → repli sur Flash-Lite, plus disponible.
+    // Gemini gratuit : modèle saturé (503), sans réponse (504) ou quota du modèle atteint (429) → repli sur Flash-Lite, plus disponible,
+    // puis deux nouvelles tentatives espacées avant de passer à une autre IA.
     const fallback = "gemini-flash-lite-latest";
-    if (provider === "gemini" && body.model !== fallback && e instanceof AppError && (e.details as { status?: number } | undefined)?.status && [429, 503, 504].includes((e.details as { status: number }).status)) {
-      log.warn("ai.gemini_fallback", { from: String(body.model) });
-      return compatCall({ ...body, model: fallback }, signal, provider, timeoutMs);
+    if (provider === "gemini" && busy(e) && !signal?.aborted) {
+      let model = body.model !== fallback ? fallback : String(body.model);
+      if (model !== body.model) log.warn("ai.gemini_fallback", { from: String(body.model) });
+      let last: unknown = e;
+      for (const wait of [0, 4000, 8000]) {
+        if (wait) await new Promise((r) => setTimeout(r, wait));
+        try {
+          return await compatCall({ ...body, model }, signal, provider, timeoutMs);
+        } catch (e2) {
+          last = e2;
+          if (!busy(e2)) throw e2;
+          model = model === fallback ? String(body.model) : fallback;
+        }
+      }
+      throw last;
     }
     throw e;
   }
@@ -291,8 +305,13 @@ export async function complete(o: { provider: ProviderName; model: string; syste
 }
 
 /** Sortie structurée validée par Zod (outputs structurés côté Anthropic, JSON mode côté OpenAI). */
+/** Taille maximale (en caractères) de la consigne envoyée à Groq. */
+const GROQ_PROMPT_MAX = 10_000;
+
 export async function completeJson<T extends z.ZodType>(o: { provider: ProviderName; model: string; system: string; prompt: string; schema: T; effort?: "low" | "medium" | "high"; timeoutMs?: number; task?: AiTask }): Promise<{ data: z.infer<T>; usage: Usage }> {
-  return routed(o.task ?? "writing", o, (p) => completeJsonWith({ ...o, ...p }));
+  // Groq gratuit refuse plus de 8 000 jetons par minute : un long cours est raccourci (début et fin gardés) plutôt que refusé.
+  const forProvider = (p: ProviderName) => (p === "groq" && o.prompt.length > GROQ_PROMPT_MAX ? { ...o, prompt: `${o.prompt.slice(0, Math.floor(GROQ_PROMPT_MAX * 0.7))}\n[…]\n${o.prompt.slice(-Math.floor(GROQ_PROMPT_MAX * 0.3))}` } : o);
+  return routed(o.task ?? "writing", o, (p) => completeJsonWith({ ...forProvider(p.provider), ...p }));
 }
 
 async function completeJsonWith<T extends z.ZodType>(o: { provider: ProviderName; model: string; system: string; prompt: string; schema: T; effort?: "low" | "medium" | "high"; timeoutMs?: number }): Promise<{ data: z.infer<T>; usage: Usage }> {
