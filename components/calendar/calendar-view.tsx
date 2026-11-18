@@ -125,7 +125,7 @@ export function CalendarView() {
               Synchroniser
             </Button>
           ) : (
-            <Badge>Google Calendar non connecté — calendrier local</Badge>
+            <Badge>Google Calendar non connecté, calendrier local</Badge>
           )}
           <Button size="sm" variant="ghost" icon={<Lightbulb className="size-3.5 text-fg-3" />} onClick={() => askAssistant("Planifie une séance de travail de deux heures demain après-midi : trouve les meilleurs créneaux libres et propose-les.")}>
             Planifier
@@ -282,7 +282,7 @@ function TimeGrid({ days, events, onOpen, onMove, onCreate }: { days: Date[]; ev
                         role="button"
                         tabIndex={0}
                         onKeyDown={(k) => k.key === "Enter" && onOpen(ev.id)}
-                        className={cn("absolute cursor-grab touch-none overflow-hidden rounded-[7px] border-l-[3px] px-1.5 py-1 text-[11.5px] leading-tight select-none active:cursor-grabbing", dragging ? "z-20 opacity-90 shadow-[var(--shadow-lg)]" : "z-[5] transition-transform")}
+                        className={cn("absolute cursor-grab touch-none overflow-hidden rounded-[7px] border-l-[3px] px-1.5 py-1 text-[11.5px] leading-tight select-none active:cursor-grabbing", dragging ? "z-20 opacity-90 shadow-[var(--shadow-float)]" : "z-[5] transition-transform")}
                         style={{
                           top,
                           height,

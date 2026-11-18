@@ -183,7 +183,7 @@ function Homework({ data }: { data: Today }) {
       <Checkbox checked={h.done} onChange={() => toggle(h)} />
       <span className={cn("min-w-0 flex-1 text-[13px]", h.done && "text-fg-3 line-through")}>
         <span className="font-medium">{h.subject}</span>
-        {h.title ? <span className="text-fg-2"> — {h.title}</span> : null}
+        {h.title ? <span className="text-fg-2"> · {h.title}</span> : null}
       </span>
       {when && <span className="t-meta shrink-0">{when}</span>}
     </li>
@@ -216,7 +216,7 @@ function Homework({ data }: { data: Today }) {
                     <Badge tone={n <= 2 ? "danger" : "warning"}>{n === 0 ? "Aujourd'hui" : `J-${n}`}</Badge>
                     <span className="min-w-0 flex-1 truncate">
                       Éval {t.subject}
-                      {t.title ? ` — ${t.title}` : ""}
+                      {t.title ? `, ${t.title}` : ""}
                     </span>
                     <Link href="/quiz" className="t-meta shrink-0 hover:text-fg">
                       Réviser

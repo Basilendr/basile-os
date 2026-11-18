@@ -288,7 +288,7 @@ const ACTIONS: Record<Exclude<ModifyAction, "trash" | "untrash">, { add?: string
   notspam: { add: ["INBOX"], remove: ["SPAM"] },
 };
 
-/** Action explicite de l'utilisateur sur un message — jamais déclenchée automatiquement. */
+/** Action explicite de l'utilisateur sur un message, jamais déclenchée automatiquement. */
 export async function modifyMessage(db: DB, userId: string, id: string, action: ModifyAction, labels?: { add?: string[]; remove?: string[] }) {
   await requireGmail(db, userId);
   let m: GMessage;
@@ -334,7 +334,7 @@ export type Outgoing = {
 const encodeHeader = (v: string) => (/^[\x20-\x7e]*$/.test(v) ? v : `=?UTF-8?B?${Buffer.from(v).toString("base64")}?=`);
 const stripCrlf = (v: string) => v.replace(/[\r\n]+/g, " ");
 
-/** Construit un message RFC 2822 (multipart) — en-têtes protégés contre l'injection CRLF. */
+/** Construit un message RFC 2822 (multipart), en-têtes protégés contre l'injection CRLF. */
 export function buildMime(m: Outgoing) {
   const boundary = `bos_${Math.random().toString(36).slice(2)}`;
   const alt = `alt_${Math.random().toString(36).slice(2)}`;
@@ -399,7 +399,7 @@ export async function deleteDraft(db: DB, userId: string, draftId: string) {
   await gfetch(db, userId, `${API}/drafts/${encodeURIComponent(draftId)}`, { method: "DELETE" });
 }
 
-/** Envoi — le message n'est considéré envoyé qu'après la réponse positive de l'API Gmail. */
+/** Envoi, le message n'est considéré envoyé qu'après la réponse positive de l'API Gmail. */
 export async function sendMessage(db: DB, userId: string, m: Outgoing, draftId?: string | null) {
   await requireGmail(db, userId);
   let sent: GMessage;

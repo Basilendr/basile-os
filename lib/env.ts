@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 
-/** Variables d'environnement côté serveur — jamais exposées au navigateur. */
+/** Variables d'environnement côté serveur, jamais exposées au navigateur. */
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.string().url().default("http://localhost:3100"),

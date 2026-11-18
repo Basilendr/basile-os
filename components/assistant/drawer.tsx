@@ -44,7 +44,7 @@ export function AssistantDrawer() {
       {assistantOpen && (
         <motion.aside
           aria-label="Assistant IA"
-          className="fixed inset-0 z-[76] flex flex-col border-line bg-card shadow-[var(--shadow-lg)] md:inset-auto md:top-2 md:right-2 md:bottom-2 md:w-[440px] md:rounded-[16px] md:border"
+          className="fixed inset-0 z-[76] flex flex-col border-line bg-card shadow-[var(--shadow-float)] md:inset-auto md:top-2 md:right-2 md:bottom-2 md:w-[440px] md:rounded-[16px] md:border"
           initial={{ opacity: 0, x: 32 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 32 }}

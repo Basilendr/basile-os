@@ -1,6 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import { eq } from "drizzle-orm";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -41,7 +39,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="fr"
       data-theme={theme === "system" ? undefined : theme}
       data-density={density}
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
       // Le bleu par défaut suit le thème (bleu plus clair en sombre).
       style={accent.toUpperCase() === "#0071E3" ? undefined : { ["--accent" as string]: accent }}
       suppressHydrationWarning

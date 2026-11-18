@@ -7,7 +7,7 @@ export function ModulePending({ title, phase, description }: { title: string; ph
     <div className="mx-auto max-w-[1200px] px-1 pt-1 pb-10 md:px-3 md:pt-2">
       <PageHeader title={title} />
       <div className="surface">
-        <EmptyState icon={<Hammer className="size-5" />} title={`Module en construction — phase ${phase}`} description={description} />
+        <EmptyState icon={<Hammer className="size-5" />} title={`Module en construction, phase ${phase}`} description={description} />
       </div>
     </div>
   );

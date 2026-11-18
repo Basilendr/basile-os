@@ -40,7 +40,7 @@ export async function createOwnerFromGoogle(db: DB, input: { email: string; sub:
   });
 }
 
-/** Configuration initiale (widgets, agents) — aucune donnée personnelle fictive. */
+/** Configuration initiale (widgets, agents), aucune donnée personnelle fictive. */
 export async function seedDefaults(db: DB, userId: string) {
   await db
     .insert(schema.dashboardWidgets)

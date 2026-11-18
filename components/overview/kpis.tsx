@@ -18,7 +18,7 @@ type Pair = { cur: number; prev: number; delta: number | null };
 export function Trend({ pair, className }: { pair: Pair; className?: string }) {
   const { delta } = pair;
   if (delta === null)
-    return pair.cur ? <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-semibold text-accent", className)}>Nouveau</span> : <span className={cn("text-[12px] text-fg-3", className)}>—</span>;
+    return pair.cur ? <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-semibold text-accent", className)}>Nouveau</span> : <span className={cn("text-[12px] text-fg-3", className)}>–</span>;
   const Icon = delta > 0 ? ArrowUpRight : delta < 0 ? ArrowDownRight : ArrowRight;
   return (
     <span className={cn("t-num inline-flex items-center gap-0.5 text-[12px] font-semibold", delta > 0 ? "text-success" : delta < 0 ? "text-danger" : "text-fg-3", className)}>
@@ -42,7 +42,7 @@ function KpiCard({ icon, label, pair, href, period, empty }: { icon: ReactNode; 
         <span className="min-w-0 flex-1 pt-0.5 text-[13px] leading-snug font-medium text-fg-2">{label}</span>
         <Menu
           trigger={({ toggle }) => (
-            <button onClick={toggle} className="focus-ring -mt-1 -mr-1 grid size-7 place-items-center rounded-[8px] text-fg-3 opacity-60 transition-opacity group-hover:opacity-100 hover:bg-raised hover:text-fg" aria-label={`Options — ${label}`}>
+            <button onClick={toggle} className="focus-ring -mt-1 -mr-1 grid size-7 place-items-center rounded-[8px] text-fg-3 opacity-60 transition-opacity group-hover:opacity-100 hover:bg-raised hover:text-fg" aria-label={`Options · ${label}`}>
               <MoreHorizontal className="size-4" />
             </button>
           )}
@@ -62,7 +62,7 @@ function KpiCard({ icon, label, pair, href, period, empty }: { icon: ReactNode; 
           </>
         ) : (
           <>
-            <span className="t-num text-[26px] leading-none font-semibold text-fg-3">—</span>
+            <span className="t-num text-[26px] leading-none font-semibold text-fg-3">–</span>
             <span className="text-[12px]">{empty}</span>
           </>
         )}
@@ -147,7 +147,7 @@ export function Insights({ data, className }: { data: DashboardData; className?:
   const avg = data.projects.length ? Math.round(data.projects.reduce((a, p) => a + p.progress, 0) / data.projects.length) : 0;
   const rows = [
     { key: "today", label: "Tâches du jour", sub: total ? `${s.doneToday} sur ${total} terminée${s.doneToday > 1 ? "s" : ""}` : "Aucune tâche prévue", value: today, shown: `${today} %`, from: "#7cc2ff", to: "#2f7cf6", icon: <Target />, href: "/tasks" },
-    { key: "ontime", label: "Ponctualité", sub: onTime === null ? "Pas encore de donnée" : "Finies avant l'échéance", value: onTime ?? 0, shown: onTime === null ? "—" : `${onTime} %`, from: "#6ee7a8", to: "#16a34a", icon: <Timer />, href: "/analytics" },
+    { key: "ontime", label: "Ponctualité", sub: onTime === null ? "Pas encore de donnée" : "Finies avant l'échéance", value: onTime ?? 0, shown: onTime === null ? "–" : `${onTime} %`, from: "#6ee7a8", to: "#16a34a", icon: <Timer />, href: "/analytics" },
     { key: "projects", label: "Projets", sub: `${data.projects.length} en cours`, value: avg, shown: `${avg} %`, from: "#d8b4fe", to: "#8b5cf6", icon: <FolderKanban />, href: "/projects" },
   ];
   const series = data.trend.series.slice(-14);

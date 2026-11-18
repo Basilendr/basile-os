@@ -90,7 +90,7 @@ export function TodayWidget({ data }: { data: DashboardData }) {
             const past = it.kind === "event" ? (it.end?.getTime() ?? 0) < now : it.task?.status === "done";
             return (
               <li key={`${it.kind}-${it.id}`} className={cn("flex items-center gap-2.5 rounded-[10px] px-1.5 py-1.5 hover:bg-raised/60", past && "opacity-50")}>
-                <span className="t-num w-10 shrink-0 text-right text-[12px] font-medium text-fg-2">{it.allDay ? "Jour" : it.start ? formatTime(it.start) : "—"}</span>
+                <span className="t-num w-10 shrink-0 text-right text-[12px] font-medium text-fg-2">{it.allDay ? "Jour" : it.start ? formatTime(it.start) : "–"}</span>
                 <span className="h-6 w-[3px] shrink-0 rounded-full" style={{ background: it.color ?? (it.kind === "event" ? "var(--accent)" : "var(--line)") }} />
                 {it.task ? <Checkbox checked={it.task.status === "done"} onChange={(v) => update.mutate({ id: it.task!.id, patch: { status: v ? "done" : "todo" } })} label="Terminer" /> : <CalendarDays className="size-4 shrink-0 text-fg-3" />}
                 <Link href={it.href} className={cn("min-w-0 flex-1 truncate text-[13px]", it.task?.status === "done" && "line-through")}>

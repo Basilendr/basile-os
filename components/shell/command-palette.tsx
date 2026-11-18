@@ -186,7 +186,7 @@ export function CommandPalette() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.985 }}
             transition={{ type: "spring", bounce: 0, visualDuration: 0.18 }}
-            className="relative flex max-h-[min(560px,75dvh)] w-full max-w-[640px] flex-col overflow-hidden rounded-[14px] border border-line bg-card shadow-[var(--shadow-lg)]"
+            className="relative flex max-h-[min(560px,75dvh)] w-full max-w-[640px] flex-col overflow-hidden rounded-[14px] border border-line bg-card shadow-[var(--shadow-float)]"
             onKeyDown={onKey}
           >
             <div className="flex items-center gap-3 border-b border-line-soft px-4">

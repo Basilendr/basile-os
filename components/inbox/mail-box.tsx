@@ -112,7 +112,7 @@ export function MailBox() {
       </section>
       <section className={cn("min-w-0 flex-1 overflow-y-auto", !id && "hidden md:block")}>
         {id ? (
-          <MailReader key={id} id={id} onBack={() => open(null)} onReply={(m) => setCompose({ to: m.fromEmail ?? "", subject: /^re\s*:/i.test(m.subject) ? m.subject : `Re : ${m.subject}`, body: `\n\n— ${m.fromName || m.fromEmail} a écrit :\n${(m.text ?? "").split("\n").slice(0, 30).map((l) => `> ${l}`).join("\n")}`, inReplyTo: m.messageId ?? undefined })} />
+          <MailReader key={id} id={id} onBack={() => open(null)} onReply={(m) => setCompose({ to: m.fromEmail ?? "", subject: /^re\s*:/i.test(m.subject) ? m.subject : `Re : ${m.subject}`, body: `\n\n${m.fromName || m.fromEmail} a écrit :\n${(m.text ?? "").split("\n").slice(0, 30).map((l) => `> ${l}`).join("\n")}`, inReplyTo: m.messageId ?? undefined })} />
         ) : (
           <EmptyState className="h-full" icon={<AtSign className="size-5" />} title="Sélectionne un message" description="Le contenu est chargé depuis ton serveur de messagerie et affiché dans un cadre isolé." />
         )}
@@ -225,7 +225,7 @@ function MailComposer({ init, from, onClose }: { init: { to?: string; subject?: 
         open={confirm}
         onClose={() => setConfirm(false)}
         title="Envoyer ce message ?"
-        description={`À : ${recipients.join(", ")} — Objet : ${v.subject || "(sans objet)"}`}
+        description={`À : ${recipients.join(", ")}, Objet : ${v.subject || "(sans objet)"}`}
         confirmLabel="Envoyer"
         loading={busy}
         onConfirm={async () => {

@@ -27,7 +27,7 @@ const KIND: Record<string, string> = {
   [FOLDER]: "Dossier",
 };
 const kindOf = (m: string) => KIND[m] ?? (m.startsWith("image/") ? "Image" : m.startsWith("video/") ? "Vidéo" : m.split("/").pop()?.toUpperCase() ?? "Fichier");
-const human = (n?: string) => (!n ? "—" : Number(n) < 1048576 ? `${Math.max(1, Math.round(Number(n) / 1024))} Ko` : `${(Number(n) / 1048576).toFixed(1)} Mo`);
+const human = (n?: string) => (!n ? "–" : Number(n) < 1048576 ? `${Math.max(1, Math.round(Number(n) / 1024))} Ko` : `${(Number(n) / 1048576).toFixed(1)} Mo`);
 const previewable = (m: string) => m === "application/pdf" || /^image\/(png|jpeg|gif|webp)$/.test(m) || m === "text/plain" || ["application/vnd.google-apps.document", "application/vnd.google-apps.spreadsheet", "application/vnd.google-apps.presentation", "application/vnd.google-apps.drawing"].includes(m);
 
 /** Google Drive dans BASILE OS : le contenu transite par le serveur, le jeton Google ne quitte jamais le serveur. */
@@ -149,9 +149,9 @@ export function DriveView() {
                         </span>
                       </td>
                       <td className="px-2 py-2.5 text-fg-2">{kindOf(f.mimeType)}</td>
-                      <td className="max-w-[180px] truncate px-2 py-2.5 text-fg-2">{f.owners?.[0]?.displayName ?? "—"}</td>
+                      <td className="max-w-[180px] truncate px-2 py-2.5 text-fg-2">{f.owners?.[0]?.displayName ?? "–"}</td>
                       <td className="px-2 py-2.5 whitespace-nowrap text-fg-2">{relativeTime(f.modifiedTime)}</td>
-                      <td className="t-num px-2 py-2.5 text-right text-fg-3">{f.mimeType === FOLDER ? "—" : human(f.size)}</td>
+                      <td className="t-num px-2 py-2.5 text-right text-fg-3">{f.mimeType === FOLDER ? "–" : human(f.size)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -226,7 +226,7 @@ function DrivePreview({ file, onClose }: { file: DriveFile | null; onClose: () =
             file.mimeType.startsWith("image/") ? (
               <img src={`/api/drive/${file.id}/content`} alt={file.name} className="max-h-[70vh] w-full rounded-[12px] border border-line object-contain" />
             ) : (
-              <iframe title={`Aperçu — ${file.name}`} src={`/api/drive/${file.id}/content`} className={cn("min-h-[70vh] w-full flex-1 rounded-[12px] border border-line bg-white")} />
+              <iframe title={`Aperçu · ${file.name}`} src={`/api/drive/${file.id}/content`} className={cn("min-h-[70vh] w-full flex-1 rounded-[12px] border border-line bg-white")} />
             )
           ) : (
             <EmptyState icon={<FileText className="size-5" />} title="Aperçu non disponible" description="Ce type de fichier ne peut pas être affiché ici. Ouvre-le dans Drive ou télécharge-le." />

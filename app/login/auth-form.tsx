@@ -52,7 +52,7 @@ export function AuthForm({ mode, next, google, initialError }: { mode: "setup" |
   }
 
   return (
-    <form onSubmit={submit} className="surface flex flex-col gap-3.5 p-6 shadow-[var(--shadow-lg)]">
+    <form onSubmit={submit} className="surface flex flex-col gap-3.5 p-6 shadow-[var(--shadow-float)]">
       {google ? (
         <a
           href={`/api/auth/google?next=${encodeURIComponent(next)}`}

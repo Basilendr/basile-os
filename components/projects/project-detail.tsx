@@ -144,7 +144,7 @@ export function ProjectDetail({ id }: { id: string }) {
       {tab === "notes" && (
         <Card className="p-2">
           <div className="flex justify-end p-1">
-            <Button size="sm" icon={<Plus className="size-3.5" />} onClick={() => openCreate("note", { projectId: p.id, title: `Note — ${p.name}` })}>
+            <Button size="sm" icon={<Plus className="size-3.5" />} onClick={() => openCreate("note", { projectId: p.id, title: `Note · ${p.name}` })}>
               Nouvelle note
             </Button>
           </div>

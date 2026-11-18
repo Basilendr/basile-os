@@ -90,7 +90,7 @@ export function NoteAiMenu({ note, getText, editor }: { note: Note; getText: () 
         open={!!result}
         onClose={() => setResult(null)}
         title={result ? LABELS[result.action] : ""}
-        description="Proposition de l'IA — rien n'est modifié sans ta validation."
+        description="Proposition de l'IA, rien n'est modifié sans ta validation."
         size="lg"
         footer={
           result && (

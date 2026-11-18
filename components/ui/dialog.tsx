@@ -90,7 +90,7 @@ export function Dialog({
             role="dialog"
             aria-modal="true"
             className={cn(
-              "relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[16px] border border-line bg-card shadow-[var(--shadow-lg)] sm:rounded-[14px]",
+              "relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[16px] border border-line bg-card shadow-[var(--shadow-float)] sm:rounded-[14px]",
               widths[size],
               className,
             )}

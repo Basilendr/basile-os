@@ -20,7 +20,6 @@ import {
   Plus,
   RefreshCw,
   RotateCcw,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { api } from "@/lib/client/api";
@@ -307,7 +306,7 @@ function Learn({ d, onQuiz, quizBusy }: { d: Deck; onQuiz: () => void; quizBusy:
       </div>
       {d.source === "drive" && (
         <Card className="flex flex-wrap items-center gap-3 p-4">
-          <Sparkles className="size-4 shrink-0 text-accent" />
+          <ListChecks className="size-4 shrink-0 text-accent" />
           <p className="min-w-0 flex-1 text-[13px]">Quiz complet sur le cours : compréhension du texte, grammaire, phrases à trous, traduction.</p>
           <Button size="sm" variant="primary" loading={quizBusy} onClick={onQuiz}>
             Faire le quiz
@@ -421,7 +420,7 @@ function Words({ d, onChange }: { d: Deck; onChange: () => Promise<unknown> }) {
                       <span className="font-medium" lang={d.lang}>
                         {c.term}
                       </span>
-                      <span className="text-fg-3"> — </span>
+                      <span className="text-fg-3"> · </span>
                       <span className="text-fg-2">{c.translation}</span>
                     </p>
                     {(c.example || c.note) && (
@@ -570,8 +569,8 @@ function Guide({ d, onBuild, building }: { d: Deck; onBuild: () => void; buildin
       <Card className="flex flex-col items-center px-6 py-10 text-center">
         <BookOpenText className="size-6 text-fg-3" />
         <p className="mt-3 text-[15px] font-semibold">{d.guideStatus === "error" ? "La fiche n'a pas pu être créée" : "Fiche pour apprendre le cours"}</p>
-        <p className="t-sub mt-1 max-w-[460px]">Le cours expliqué en français, les phrases clés à savoir par cœur, la grammaire et des questions d'oral avec une réponse modèle — tout se lit à voix haute.</p>
-        <Button className="mt-4" variant="primary" icon={<Sparkles className="size-3.5" />} loading={building} disabled={!d.hasText && d.cards.length < 3} onClick={onBuild}>
+        <p className="t-sub mt-1 max-w-[460px]">Le cours expliqué en français, les phrases clés à savoir par cœur, la grammaire et des questions d'oral avec une réponse modèle, tout se lit à voix haute.</p>
+        <Button className="mt-4" variant="primary" icon={<BookOpenText className="size-3.5" />} loading={building} disabled={!d.hasText && d.cards.length < 3} onClick={onBuild}>
           {d.guideStatus === "error" ? "Réessayer" : "Créer la fiche"}
         </Button>
       </Card>

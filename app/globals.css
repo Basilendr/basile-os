@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   BASILE OS — système de conception
+   BASILE OS, système de conception
    Les couleurs sont des jetons : les composants n'utilisent jamais de
    valeurs brutes, ce qui garantit la cohérence clair / sombre.
 ------------------------------------------------------------------ */
 
-/* Thème clair — verre blanc dépoli posé sur une photo, accent bleu. */
+/* Thème clair, verre blanc dépoli posé sur une photo, accent bleu. */
 :root,
 [data-theme="light"] {
   color-scheme: light;
@@ -45,10 +45,10 @@
   --veil: linear-gradient(180deg, rgb(10 14 22 / 0.18), rgb(10 14 22 / 0.08) 45%, rgb(10 14 22 / 0.22));
   --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 10px 30px -18px rgb(15 23 42 / 0.35);
   --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 16px 40px -18px rgb(15 23 42 / 0.4);
-  --shadow-lg: 0 30px 70px -24px rgb(15 23 42 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.55);
+  --shadow-float: 0 30px 70px -24px rgb(15 23 42 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.55);
 }
 
-/* Thème sombre — verre fumé façon visionOS, texte blanc, accent bleu. */
+/* Thème sombre, verre fumé façon visionOS, texte blanc, accent bleu. */
 [data-theme="dark"] {
   color-scheme: dark;
   --bg: #14161b;
@@ -86,7 +86,7 @@
   --veil: linear-gradient(180deg, rgb(6 8 13 / 0.62), rgb(6 8 13 / 0.48) 45%, rgb(6 8 13 / 0.7));
   --shadow-sm: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 14px 34px -18px rgb(0 0 0 / 0.6);
   --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 18px 44px -18px rgb(0 0 0 / 0.65);
-  --shadow-lg: 0 30px 80px -24px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.12);
+  --shadow-float: 0 30px 80px -24px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 
 /* Fonds d'écran (choisis dans Paramètres → Apparence ; « océan » par défaut). */
@@ -121,8 +121,8 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-geist-sans), "Helvetica Neue", system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --radius-sm: 7px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -160,7 +160,7 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Hiérarchie typographique — tracking négatif sur les grands corps,
+   Hiérarchie typographique, tracking négatif sur les grands corps,
    légèrement positif sur les petits libellés.
 ------------------------------------------------------------------ */
 @utility t-display {
@@ -218,13 +218,6 @@ body {
   box-shadow: var(--shadow-sm);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
   backdrop-filter: blur(40px) saturate(160%);
-}
-@utility grid-bg {
-  background-image:
-    linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
 @utility glass {
   background: var(--glass);
@@ -694,7 +687,7 @@ html {
   color: var(--fg-2);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
   backdrop-filter: blur(40px) saturate(160%);
-  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+  transition: background-color 150ms, color 150ms, transform 100ms;
 }
 .glass-btn:hover {
   color: var(--fg);

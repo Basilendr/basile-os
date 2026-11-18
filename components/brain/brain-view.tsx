@@ -225,7 +225,7 @@ function Items({ openId, onOpen }: { openId: string | null; onOpen: (id: string 
       </div>
       {!data ? null : !data.items.length ? (
         <div className="surface">
-          <EmptyState icon={<Lightbulb className="size-5" />} title="Aucune connaissance" description="Ajoute des idées, comptes rendus de réunion, références — ou envoie un email important au Second Brain depuis la boîte de réception." />
+          <EmptyState icon={<Lightbulb className="size-5" />} title="Aucune connaissance" description="Ajoute des idées, comptes rendus de réunion, références, ou envoie un email important au Second Brain depuis la boîte de réception." />
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

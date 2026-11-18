@@ -110,7 +110,7 @@ export async function savePlan(db: DB, userId: string, date: string, patch: { bl
   return r;
 }
 
-/** Crée l'événement d'un bloc — appelé uniquement après confirmation explicite dans l'interface. */
+/** Crée l'événement d'un bloc, appelé uniquement après confirmation explicite dans l'interface. */
 export async function commitBlock(db: DB, userId: string, date: string, blockId: string) {
   const p = await getPlan(db, userId, date);
   if (!p) throw notFound("Planning");

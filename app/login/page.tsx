@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -16,10 +17,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="relative isolate grid min-h-dvh place-items-center overflow-hidden px-4 py-10">
       <div className="app-backdrop" aria-hidden />
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="grid-bg absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
-        <div className="absolute top-[-180px] left-1/2 size-[560px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_65%)] blur-2xl" />
-      </div>
       <div className="relative w-full max-w-[400px]">
         <div className="mb-8 flex flex-col items-center text-center">
           <LogoMark size={44} />
@@ -37,6 +34,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               Mot de passe oublié : arrête le serveur puis lance <code className="font-mono">npm run account:password -- "nouveau-mot-de-passe"</code>.
             </>
           )}
+        </p>
+        <p className="t-meta mt-4 text-center">
+          <Link href="/mentions-legales" className="underline-offset-2 hover:underline">
+            Mentions légales
+          </Link>
+          {" · "}
+          <Link href="/confidentialite" className="underline-offset-2 hover:underline">
+            Confidentialité
+          </Link>
         </p>
       </div>
     </main>

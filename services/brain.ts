@@ -13,7 +13,7 @@ export type EntityType = (typeof ENTITY_TYPES)[number];
 export const hrefFor = (type: string, id: string) =>
   ({ project: `/projects/${id}`, task: `/tasks?task=${id}`, note: `/notes?note=${id}`, file: `/files?file=${id}`, contact: `/contacts?contact=${id}`, email: `/inbox?message=${id}`, event: `/calendar?event=${id}`, knowledge: `/brain?item=${id}` })[type] ?? "/brain";
 
-/** Résout des références (type, id) en titres + liens — seulement les entités de l'utilisateur. */
+/** Résout des références (type, id) en titres + liens, seulement les entités de l'utilisateur. */
 export async function resolveEntities(db: DB, userId: string, refs: { type: string; id: string }[]) {
   const out = new Map<string, { type: string; id: string; title: string; href: string }>();
   const by = (t: string) => [...new Set(refs.filter((r) => r.type === t).map((r) => r.id))];

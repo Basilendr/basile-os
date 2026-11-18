@@ -513,7 +513,7 @@ export async function explainQuestion(db: DB, userId: string, quizId: string, qu
     model: ai.model,
     effort: "low",
     system: `Tu es un professeur particulier patient qui aide un lycéen à comprendre une notion sur laquelle il vient de buter. Explique simplement, en 5 à 8 phrases, en le tutoyant : rappelle l'idée de fond, pourquoi la bonne réponse est juste, pourquoi sa réponse ne convenait pas si elle était fausse, puis donne un exemple concret ou un moyen mnémotechnique. Appuie-toi sur l'extrait du cours quand il est fourni, sans rien inventer. Texte brut, sans Markdown. ${GUARD}`,
-    prompt: `Matière : ${question.subject}${question.topic ? ` — ${question.topic}` : ""}\nQuestion : ${question.prompt}\nBonne réponse : ${answerText(question)}\nRéponse de l'élève : ${given} (${mine.correct ? "juste" : "fausse"})\nExplication déjà donnée : ${question.explanation}${excerpt ? `\n<extrait_du_cours>\n${excerpt}\n</extrait_du_cours>` : ""}`,
+    prompt: `Matière : ${question.subject}${question.topic ? `, ${question.topic}` : ""}\nQuestion : ${question.prompt}\nBonne réponse : ${answerText(question)}\nRéponse de l'élève : ${given} (${mine.correct ? "juste" : "fausse"})\nExplication déjà donnée : ${question.explanation}${excerpt ? `\n<extrait_du_cours>\n${excerpt}\n</extrait_du_cours>` : ""}`,
   });
   await recordUsage(db, userId, r.usage, "quiz:explain");
   return { text: r.text };

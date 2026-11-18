@@ -3,7 +3,8 @@ import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { House, Sparkles, Inbox, Sun, LayoutGrid, Share, X } from "lucide-react";
+import { House, Inbox, CalendarCheck2, LayoutGrid, Share, X } from "lucide-react";
+import { AssistantIcon } from "./assistant-icon";
 import { isIos, isStandalone, registerSw } from "@/lib/client/push";
 import { Sidebar } from "./sidebar-frame";
 import { SidebarContent } from "./sidebar";
@@ -89,7 +90,7 @@ function ShellInner({ children }: { children: ReactNode }) {
             <div className="fixed inset-0 z-[70] md:hidden">
               <motion.div className="absolute inset-0 bg-[var(--scrim)]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileNavOpen(false)} />
               <motion.aside
-                className="absolute inset-y-2 left-2 flex w-[284px] max-w-[85vw] flex-col overflow-hidden rounded-[28px] border border-line bg-card pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-lg)]"
+                className="absolute inset-y-2 left-2 flex w-[284px] max-w-[85vw] flex-col overflow-hidden rounded-[28px] border border-line bg-card pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-float)]"
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
@@ -133,8 +134,8 @@ function MobileTabBar() {
   const { setMobileNavOpen } = useUI();
   const tabs = [
     { href: "/", label: "Accueil", icon: House },
-    { href: "/today", label: "Aujourd'hui", icon: Sun },
-    { href: "/assistant", label: "Assistant", icon: Sparkles },
+    { href: "/today", label: "Aujourd'hui", icon: CalendarCheck2 },
+    { href: "/assistant", label: "Assistant", icon: AssistantIcon },
     { href: "/inbox", label: "Messages", icon: Inbox },
   ];
   return (
@@ -181,7 +182,7 @@ function InstallHint() {
     } catch {}
   };
   return (
-    <div className="fixed inset-x-2 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-[16px] border border-line bg-card px-3.5 py-2.5 shadow-[var(--shadow-lg)] md:hidden">
+    <div className="fixed inset-x-2 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-[16px] border border-line bg-card px-3.5 py-2.5 shadow-[var(--shadow-float)] md:hidden">
       <Share className="size-5 shrink-0 text-accent" />
       <p className="min-w-0 flex-1 text-[12.5px] leading-snug">
         Installe l'app : touche <b>Partager</b> puis <b>Sur l'écran d'accueil</b>.

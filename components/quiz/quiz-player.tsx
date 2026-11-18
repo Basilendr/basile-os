@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, FileText, Lightbulb, Loader2, RefreshCw, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, FileText, Lightbulb, Loader2, RefreshCw, RotateCcw, X, BookOpenCheck } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { cn, plural, relativeTime } from "@/lib/utils";
 import { Badge, Card, ErrorState, Kbd, Progress, Skeleton } from "@/components/ui/misc";
@@ -126,9 +126,9 @@ function Generating({ data }: { data: QuizData }) {
       <motion.div
         className="mb-4 grid size-14 place-items-center rounded-[16px] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-accent"
         animate={{ scale: [1, 1.07, 1] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 0.9, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
       >
-        <Sparkles className="size-7" />
+        <BookOpenCheck className="size-7" />
       </motion.div>
       <p className="text-[17px] font-semibold">Je prépare ton quiz…</p>
       <p className="t-sub mt-1 flex items-center gap-2">
@@ -541,7 +541,7 @@ function Results({ data, header, busy, onRestart, onMore }: { data: QuizData; he
           <p className="t-meta mt-2">{wrong.length ? `${plural(wrong.length, "question ratée reviendra", "questions ratées reviendront")} dès demain dans « Mes erreurs à revoir ».` : "Rien à revoir : tout est su."}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
             {data.kind !== "review" && data.sources.length > 0 && (
-              <Button variant="primary" icon={<Sparkles className="size-3.5" />} loading={busy === "more"} onClick={onMore}>
+              <Button variant="primary" icon={<RefreshCw className="size-3.5" />} loading={busy === "more"} onClick={onMore}>
                 Nouvelles questions
               </Button>
             )}

@@ -73,7 +73,7 @@ export function Menu({ trigger, items, align = "end", className }: { trigger: (p
               <motion.div
                 ref={panel}
                 role="menu"
-                className={cn("fixed z-[90] w-[220px] overflow-hidden rounded-[10px] border border-line bg-card p-1 shadow-[var(--shadow-lg)]", className)}
+                className={cn("fixed z-[90] w-[220px] overflow-hidden rounded-[10px] border border-line bg-card p-1 shadow-[var(--shadow-float)]", className)}
                 style={{ top: pos.top, left: pos.left, transformOrigin: `${align === "end" ? "right" : "left"} ${pos.originY}` }}
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}

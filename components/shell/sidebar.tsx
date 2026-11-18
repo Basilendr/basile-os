@@ -227,7 +227,7 @@ function RailFolder({ folder, active, highlighted, onNavigate }: { folder: NavFo
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.96, x: -4 }}
                 transition={SPRING}
-                className="fixed z-[80] w-[264px] origin-left rounded-[24px] border border-line bg-card p-3 shadow-[var(--shadow-lg)]"
+                className="fixed z-[80] w-[264px] origin-left rounded-[24px] border border-line bg-card p-3 shadow-[var(--shadow-float)]"
                 style={{ top: pos.top, left: pos.left }}
               >
                 <div className="mb-2.5 flex items-center gap-2.5 px-1">

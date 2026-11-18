@@ -69,7 +69,7 @@ async function connect(): Promise<DB> {
   return createEmbeddedDb(path.resolve(env.DATA_DIR, "pg"));
 }
 
-/** Base PGlite — `dir` vide = base en mémoire (tests). */
+/** Base PGlite, `dir` vide = base en mémoire (tests). */
 export async function createEmbeddedDb(dir?: string): Promise<DB> {
   const { PGlite } = await import("@electric-sql/pglite");
   const { vector } = await import("@electric-sql/pglite-pgvector");

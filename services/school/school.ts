@@ -224,7 +224,7 @@ export async function syncSchool(db: DB, userId: string) {
       report.grades++;
       if (known.size && !known.has(String(n.id))) {
         report.newGrades++;
-        await notify(db, userId, { type: "system", title: `Nouvelle note : ${n.libelleMatiere}`, body: `${n.devoir} — ${n.valeur}/${n.noteSur}`, href: "/school?tab=evals", dedupeKey: `ed-grade:${n.id}` });
+        await notify(db, userId, { type: "system", title: `Nouvelle note : ${n.libelleMatiere}`, body: `${n.devoir}, ${n.valeur}/${n.noteSur}`, href: "/school?tab=evals", dedupeKey: `ed-grade:${n.id}` });
       }
     }
 
@@ -317,7 +317,7 @@ export async function addHomework(db: DB, userId: string, raw: z.input<typeof Ho
   return r;
 }
 
-/** Fait / à faire — répercuté sur École Directe pour ses propres devoirs. */
+/** Fait / à faire, répercuté sur École Directe pour ses propres devoirs. */
 export async function setHomeworkDone(db: DB, userId: string, id: string, done: boolean) {
   const [h] = await db.select().from(schema.schoolHomework).where(and(eq(schema.schoolHomework.id, id), eq(schema.schoolHomework.userId, userId)));
   if (!h) throw notFound("Devoir");

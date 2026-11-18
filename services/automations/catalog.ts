@@ -56,7 +56,7 @@ export const ACTIONS: Record<string, { label: string; description: string; sensi
   generate_briefing: { label: "Générer le briefing IA", description: "Prépare le briefing quotidien (IA configurée requise)", config: [] },
   send_email: {
     label: "Préparer un email",
-    description: "Prépare un email — envoi uniquement après ta confirmation",
+    description: "Prépare un email, envoi uniquement après ta confirmation",
     sensitive: true,
     config: [
       { key: "to", label: "Destinataire", type: "text" },

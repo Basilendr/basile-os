@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 24, transition: { duration: 0.15 } }}
               transition={{ type: "spring", bounce: 0, visualDuration: 0.3 }}
-              className="pointer-events-auto flex items-start gap-3 rounded-[11px] border border-line bg-card px-3.5 py-3 shadow-[var(--shadow-lg)]"
+              className="pointer-events-auto flex items-start gap-3 rounded-[11px] border border-line bg-card px-3.5 py-3 shadow-[var(--shadow-float)]"
             >
               <span className="mt-0.5">{icon[t.kind]}</span>
               <div className="min-w-0 flex-1">

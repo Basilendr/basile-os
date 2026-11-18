@@ -144,7 +144,7 @@ export function Composer({ init, onClose }: { init: ComposeInit; onClose: () => 
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", bounce: 0, visualDuration: 0.3 }}
-      className={cn("fixed z-[78] flex flex-col overflow-hidden border border-line bg-card shadow-[var(--shadow-lg)]", min ? "right-4 bottom-4 h-12 w-[320px] rounded-[12px]" : "inset-0 md:inset-auto md:right-4 md:bottom-4 md:h-[min(640px,calc(100dvh-90px))] md:w-[600px] md:rounded-[14px]")}
+      className={cn("fixed z-[78] flex flex-col overflow-hidden border border-line bg-card shadow-[var(--shadow-float)]", min ? "right-4 bottom-4 h-12 w-[320px] rounded-[12px]" : "inset-0 md:inset-auto md:right-4 md:bottom-4 md:h-[min(640px,calc(100dvh-90px))] md:w-[600px] md:rounded-[14px]")}
     >
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-line-soft px-3">
         <span className="t-section flex-1 truncate">{subject || "Nouveau message"}</span>

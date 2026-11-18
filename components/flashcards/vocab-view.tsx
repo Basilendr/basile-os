@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Camera, ClipboardPaste, FileText, FolderOpen, Keyboard, Languages, Layers, Loader2, Plus, Sparkles, X } from "lucide-react";
+import { AlertTriangle, Camera, ClipboardPaste, FileText, FolderOpen, Keyboard, Languages, Layers, Loader2, Plus, X } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { cn, plural } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -281,7 +281,7 @@ function CreateDeck({ open, onClose, ready }: { open: boolean; onClose: () => vo
             <Button variant="ghost" onClick={onClose}>
               Annuler
             </Button>
-            <Button variant="primary" icon={tab === "manual" ? <Plus className="size-3.5" /> : <Sparkles className="size-3.5" />} disabled={!canSubmit || !!needAi} loading={busy === "create"} onClick={submit}>
+            <Button variant="primary" icon={tab === "manual" ? <Plus className="size-3.5" /> : <Layers className="size-3.5" />} disabled={!canSubmit || !!needAi} loading={busy === "create"} onClick={submit}>
               {tab === "manual" ? "Créer le paquet" : "Créer les cartes"}
             </Button>
           </>
@@ -384,12 +384,12 @@ function CreateDeck({ open, onClose, ready }: { open: boolean; onClose: () => vo
                 ))}
               </Select>
             </Field>
-            <Field label="Titre" hint={tab === "manual" ? undefined : "Optionnel — sinon l'IA en propose un."}>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} placeholder={tab === "manual" ? "ex. Unité 3 — la ville" : ""} />
+            <Field label="Titre" hint={tab === "manual" ? undefined : "Optionnel, sinon l'IA en propose un."}>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} placeholder={tab === "manual" ? "ex. Unité 3, la ville" : ""} />
             </Field>
           </div>
           {(tab === "drive" || tab === "scan" || tab === "text") && (
-            <Field label="Partie à prendre" hint="Optionnel — ex. « seulement le lexique de la page 2 », « le texte sur Madrid ».">
+            <Field label="Partie à prendre" hint="Optionnel. Ex. « seulement le lexique de la page 2 », « le texte sur Madrid ».">
               <Input value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={300} />
             </Field>
           )}

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { CheckCircle2, LayoutList, Columns3, Plus, Search, Lightbulb, Sun, CalendarClock, ListTodo, AlertTriangle, CheckCheck, FolderKanban } from "lucide-react";
+import { CheckCircle2, LayoutList, Columns3, Plus, Search, Lightbulb, CalendarCheck2, CalendarClock, ListTodo, AlertTriangle, CheckCheck, FolderKanban } from "lucide-react";
 import { PageHeader, EmptyState, ErrorState, Skeleton, Dot } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import { Kanban } from "./kanban";
 import type { Task } from "@/types";
 
 const VIEWS: { value: TaskView; label: string; icon: React.ReactNode; key: keyof NonNullable<ReturnType<typeof useTasks>["data"]>["counts"] }[] = [
-  { value: "today", label: "Ma journée", icon: <Sun />, key: "today" },
+  { value: "today", label: "Ma journée", icon: <CalendarCheck2 />, key: "today" },
   { value: "upcoming", label: "À venir", icon: <CalendarClock />, key: "upcoming" },
   { value: "all", label: "Toutes", icon: <ListTodo />, key: "all" },
   { value: "overdue", label: "En retard", icon: <AlertTriangle />, key: "overdue" },
@@ -120,7 +120,7 @@ export function TasksView() {
           <EmptyState
             icon={<CheckCircle2 className="size-5" />}
             title={view === "today" ? "Rien de prévu aujourd'hui" : view === "overdue" ? "Aucune tâche en retard" : view === "done" ? "Aucune tâche terminée" : "Aucune tâche"}
-            description="Ajoute une tâche ci-dessus — tu peux écrire « demain 14h » ou « vendredi » pour fixer l'échéance."
+            description="Ajoute une tâche ci-dessus, tu peux écrire « demain 14h » ou « vendredi » pour fixer l'échéance."
           />
         </div>
       ) : groups ? (

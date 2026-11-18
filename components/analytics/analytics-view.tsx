@@ -45,7 +45,7 @@ export function AnalyticsView() {
             {[
               { l: "Tâches terminées", v: a.totals.completed, i: <CheckCircle2 /> },
               { l: "Tâches créées", v: a.totals.created, i: <BarChart3 /> },
-              { l: "À temps", v: a.totals.done_with_due ? `${Math.round((100 * a.totals.on_time) / a.totals.done_with_due)} %` : "—", i: <CalendarClock /> },
+              { l: "À temps", v: a.totals.done_with_due ? `${Math.round((100 * a.totals.on_time) / a.totals.done_with_due)} %` : "–", i: <CalendarClock /> },
               { l: "En retard", v: a.totals.overdue, i: <AlertTriangle /> },
               { l: "Reportées 2×+", v: a.totals.postponed, i: <Repeat2 /> },
             ].map((s) => (

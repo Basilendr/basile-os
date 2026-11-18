@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Bell, Menu as MenuIcon, Search, LogOut, Settings, Plug, User, Sun, Moon, Sparkles, House, GraduationCap, Inbox, ListChecks } from "lucide-react";
+import { Bell, Menu as MenuIcon, Search, LogOut, Settings, Plug, User, House, GraduationCap, Inbox, ListChecks } from "lucide-react";
+import { AssistantIcon } from "./assistant-icon";
 import { cn } from "@/lib/utils";
 import { useUI } from "./ui-context";
 import { NotificationsPopover } from "./notifications-panel";
@@ -28,22 +29,13 @@ export function Topbar() {
   const { data: status } = useStatus();
   const [notifOpen, setNotifOpen] = useState(false);
   const [isMac, setIsMac] = useState(true);
-  const [dark, setDark] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   useEffect(() => {
     setIsMac(/Mac|iPhone|iPad/.test(navigator.platform));
-    setDark(document.documentElement.dataset.theme === "dark");
   }, []);
   const unread = status?.unreadNotifications ?? 0;
   const current = MAIN.find((m) => m.match.some((p) => (p === "/" ? pathname === "/" || pathname === "/today" : pathname.startsWith(p))));
-
-  const toggleTheme = () => {
-    const next = dark ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    setDark(!dark);
-    api.patch("/api/preferences", { theme: next }).catch(() => null);
-  };
 
   const round = "glass-btn focus-ring relative size-10 shrink-0";
   const initials = me.displayName
@@ -99,10 +91,7 @@ export function Topbar() {
           </button>
           <PomodoroPill />
           <button onClick={() => setAssistantOpen(true)} className={round} aria-label="Assistant" title={`Assistant (${isMac ? "⌘" : "Ctrl"} J)`}>
-            <Sparkles className="size-[17px]" strokeWidth={1.8} />
-          </button>
-          <button onClick={toggleTheme} className={cn(round, "hidden sm:grid")} aria-label={dark ? "Thème clair" : "Thème sombre"} title={dark ? "Thème clair" : "Thème sombre"}>
-            {dark ? <Sun className="size-[17px]" strokeWidth={1.8} /> : <Moon className="size-[17px]" strokeWidth={1.8} />}
+            <AssistantIcon className="size-[17px]" strokeWidth={1.8} />
           </button>
           <button onClick={() => setNotifOpen((o) => !o)} className={round} aria-label={`Notifications${unread ? ` (${unread} non lues)` : ""}`}>
             <Bell className="size-[17px]" strokeWidth={1.8} />

@@ -42,7 +42,7 @@ export function langOf(...names: (string | null | undefined)[]): LangCode | null
 
 export type CardDraft = { term: string; translation: string; example?: string | null; exampleFr?: string | null; note?: string | null; kind?: string | null };
 
-const SEPARATORS = [/\t+/, /\s+=\s*/, /\s*→\s*/, /\s*->\s*/, /\s+:\s+/, /\s+[–—-]\s+/, /\s*;\s*/];
+const SEPARATORS = [/\t+/, /\s+=\s*/, /\s*→\s*/, /\s*->\s*/, /\s+:\s+/, /\s+[\u2013\u2014-]\s+/, /\s*;\s*/];
 
 /**
  * Lit un lexique « mot = traduction » (une paire par ligne ; séparateurs acceptés : =, →, ->, :, tiret, tabulation, point-virgule).

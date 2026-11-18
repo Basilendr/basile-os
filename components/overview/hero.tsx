@@ -99,7 +99,7 @@ export function Hero({ context, className }: { context: string; className?: stri
                 <span className="t-num">
                   ↑ {round(w.today.max)}° ↓ {round(w.today.min)}°
                 </span>
-                <Link href="/settings?s=general" className="inline-flex items-center gap-1 hover:text-[var(--sky-fg)]" title={w.isDefaultPlace ? "Ville par défaut — choisir la tienne" : "Changer de ville"}>
+                <Link href="/settings?s=general" className="inline-flex items-center gap-1 hover:text-[var(--sky-fg)]" title={w.isDefaultPlace ? "Ville par défaut, choisir la tienne" : "Changer de ville"}>
                   <MapPin className="size-3.5" />
                   {w.place}
                   {w.isDefaultPlace && <span className="underline underline-offset-2">choisir</span>}

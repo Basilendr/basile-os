@@ -31,7 +31,7 @@ export function Sheet({ open, onClose, title, actions, children, width = 520 }: 
           <motion.aside
             role="complementary"
             className={cn(
-              "fixed z-[75] flex flex-col border-line bg-card shadow-[var(--shadow-lg)]",
+              "fixed z-[75] flex flex-col border-line bg-card shadow-[var(--shadow-float)]",
               isMobile ? "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-[18px] border-t" : "top-2 right-2 bottom-2 rounded-[14px] border",
             )}
             style={isMobile ? undefined : { width: `min(${width}px, calc(100vw - 16px))` }}

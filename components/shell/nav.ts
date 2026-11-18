@@ -1,7 +1,6 @@
 import {
-  Sun,
+  CalendarCheck2,
   House,
-  Sparkles,
   Inbox,
   CalendarDays,
   CheckCircle2,
@@ -28,6 +27,7 @@ import {
   Languages,
   type LucideIcon,
 } from "lucide-react";
+import { AssistantIcon } from "./assistant-icon";
 
 /** Une destination : `also` regroupe les chemins qui l'activent aussi (onglets d'une même rubrique). */
 export type NavLeaf = { href: string; label: string; icon: LucideIcon; shortcut?: string; also?: string[] };
@@ -38,7 +38,7 @@ export type NavFolder = { id: string; label: string; hint: string; tone: FolderT
 /** Accès directs, toujours visibles. */
 export const SHORTCUTS: NavLeaf[] = [
   { href: "/", label: "Accueil", icon: House, shortcut: "G O" },
-  { href: "/assistant", label: "Assistant IA", icon: Sparkles, shortcut: "G A", also: ["/command", "/agents"] },
+  { href: "/assistant", label: "Assistant IA", icon: AssistantIcon, shortcut: "G A", also: ["/command", "/agents"] },
   { href: "/inbox", label: "Messagerie", icon: Inbox, shortcut: "G I" },
 ];
 
@@ -91,7 +91,7 @@ export const FOLDERS: NavFolder[] = [
     items: [
       { href: "/finance", label: "Finances", icon: Wallet },
       { href: "/contacts", label: "Contacts", icon: Users },
-      { href: "/today", label: "Aujourd'hui", icon: Sun, shortcut: "G J" },
+      { href: "/today", label: "Aujourd'hui", icon: CalendarCheck2, shortcut: "G J" },
       { href: "/analytics", label: "Analyses", icon: BarChart3 },
       { href: "/automations", label: "Automatisations", icon: Workflow },
     ],
@@ -100,7 +100,7 @@ export const FOLDERS: NavFolder[] = [
 
 /** Pages de l'assistant, présentées en onglets dans la page Assistant. */
 export const ASSISTANT_TABS: NavLeaf[] = [
-  { href: "/assistant", label: "Discussion", icon: Sparkles },
+  { href: "/assistant", label: "Discussion", icon: AssistantIcon },
   { href: "/command", label: "Centre de commande", icon: Command },
   { href: "/agents", label: "Agents", icon: Bot },
 ];

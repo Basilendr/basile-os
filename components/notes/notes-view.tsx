@@ -122,7 +122,7 @@ export function NotesView() {
         {noteId ? (
           <NotePane key={noteId} id={noteId} folders={folders?.items ?? []} onBack={() => open(null)} />
         ) : (
-          <EmptyState className="h-full" icon={<NotebookPen className="size-5" />} title="Sélectionne une note" description="Ou crée-en une nouvelle — l'enregistrement est automatique." action={<Button variant="primary" onClick={createNote}>Nouvelle note</Button>} />
+          <EmptyState className="h-full" icon={<NotebookPen className="size-5" />} title="Sélectionne une note" description="Ou crée-en une nouvelle, l'enregistrement est automatique." action={<Button variant="primary" onClick={createNote}>Nouvelle note</Button>} />
         )}
       </section>
     </div>
@@ -293,7 +293,7 @@ function NotePane({ id, folders, onBack }: { id: string; folders: Folder[]; onBa
     saved: { icon: <Check className="size-3" />, label: "Enregistré", cls: "text-fg-3" },
     dirty: { icon: <Pencil className="size-3" />, label: "Modifications…", cls: "text-fg-3" },
     saving: { icon: <Loader2 className="size-3 animate-spin" />, label: "Enregistrement…", cls: "text-fg-3" },
-    error: { icon: <AlertCircle className="size-3" />, label: "Échec — nouvel essai", cls: "text-danger" },
+    error: { icon: <AlertCircle className="size-3" />, label: "Échec, nouvel essai", cls: "text-danger" },
     conflict: { icon: <AlertCircle className="size-3" />, label: "Modifiée ailleurs", cls: "text-warning" },
   }[state];
 

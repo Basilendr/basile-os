@@ -31,7 +31,6 @@
     "@tiptap/starter-kit": "^3.32.2",
     "chrono-node": "^2.10.3",
     "drizzle-orm": "^0.45.4",
-    "geist": "^1.5.1",
     "imapflow": "^2.10.0",
     "lucide-react": "^1.66.0",
     "mailparser": "^3.14.1",

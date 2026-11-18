@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Pencil, Trash2, MoreHorizontal, Paperclip, Sparkles, ChevronDown, Check, History } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, MoreHorizontal, Paperclip, ChevronDown, Check, History } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { cn, relativeTime } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -55,7 +55,6 @@ export function AssistantView() {
 
   return (
     <div className="relative isolate flex h-full min-h-0 flex-col">
-      <div aria-hidden className="grid-bg pointer-events-none absolute inset-0 -z-10 opacity-80" />
       <div className="flex flex-wrap items-center gap-2 px-1 pt-1 md:px-3 md:pt-2">
         <ModelPicker />
         <AssistantTabs className="order-last w-full sm:order-none sm:mx-auto sm:w-auto" />
@@ -74,12 +73,11 @@ export function AssistantView() {
           <div className="rise-in flex w-full max-w-[640px] flex-col items-center text-center">
             <Orb size={92} active={chat.busy} />
             <h1 className="mt-7 text-[28px] font-semibold tracking-[-0.025em]">Ravi de te revoir, {me.displayName.split(" ")[0]}.</h1>
-            <p className="t-sub mt-2 max-w-md">Je consulte tes tâches, ton agenda, tes emails, ta scolarité et tes documents — et je cite mes sources.</p>
+            <p className="t-sub mt-2 max-w-md">Je consulte tes tâches, ton agenda, tes emails, ta scolarité et tes documents, et je cite mes sources.</p>
             <div className="mt-7 w-full">{composer}</div>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {suggestionsFor("/").slice(0, 4).map((s) => (
                 <button key={s} onClick={() => chat.send(s)} className="focus-ring inline-flex items-center gap-2 rounded-full border border-line bg-card/80 px-3.5 py-2 text-[12.5px] text-fg-2 shadow-[var(--shadow-sm)] backdrop-blur-sm transition-colors hover:border-fg-3/40 hover:text-fg">
-                  <Sparkles className="size-3.5 text-fg-3" />
                   {s}
                 </button>
               ))}

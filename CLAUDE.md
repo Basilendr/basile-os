@@ -1,4 +1,4 @@
-# BASILE OS — consignes pour Claude
+# BASILE OS : consignes pour Claude
 
 Lire `AGENTS.md` et `REPRISE-CLAUDE.md` avant de coder. Note du coffre : `02-Projets/BASILE OS.md`.
 

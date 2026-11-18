@@ -127,7 +127,7 @@ function Card({ t, dragging }: { t: Task; dragging?: boolean }) {
     <div
       className={cn(
         "cursor-grab rounded-[10px] border border-line bg-card p-3 transition-shadow hover:border-fg-3/40 active:cursor-grabbing",
-        dragging && "rotate-[1.5deg] shadow-[var(--shadow-lg)]",
+        dragging && "rotate-[1.5deg] shadow-[var(--shadow-float)]",
       )}
     >
       <p className={cn("text-[13px] leading-snug font-medium", t.status === "done" && "text-fg-3 line-through")}>{t.title}</p>

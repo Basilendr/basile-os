@@ -44,7 +44,7 @@ export async function desiredEvents(db: DB, userId: string, from: string, to: st
       startAt: new Date(l.startAt),
       event: {
         summary: `${label ? `⚠︎ ` : ""}${l.subject}`,
-        description: [l.teacher, change ? `${label ?? "Événement"} — ${change.note || ""} (${change.origin})`.replace(" —  (", " (") : null].filter(Boolean).join("\n"),
+        description: [l.teacher, change ? `${label ?? "Événement"}, ${change.note || ""} (${change.origin})`.replace(",  (", " (") : null].filter(Boolean).join("\n"),
         location: plain(l.room) || undefined,
         colorId: change ? "6" : undefined,
         start: { dateTime: l.startAt, timeZone: tz },
@@ -65,7 +65,7 @@ export async function desiredEvents(db: DB, userId: string, from: string, to: st
       key: `hw:${h.id}`,
       startAt: new Date(`${h.dueDate}T00:00:00Z`),
       event: {
-        summary: `${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? ` — ${h.title}` : ""}`.slice(0, 200),
+        summary: `${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? `, ${h.title}` : ""}`.slice(0, 200),
         description: h.title,
         colorId: h.isTest ? "11" : "5",
         start: { date: h.dueDate },
@@ -113,7 +113,7 @@ async function targetCalendar(db: DB, userId: string, current: string | null, se
     }
   }
   if (current === "primary") await moveFrom("primary");
-  const cal = await gfetch<{ id: string }>(db, userId, `${API}/calendars`, { method: "POST", body: JSON.stringify({ summary: NAME, description: "Emploi du temps, devoirs et évaluations — tenu à jour par Basile OS.", timeZone: tz }) });
+  const cal = await gfetch<{ id: string }>(db, userId, `${API}/calendars`, { method: "POST", body: JSON.stringify({ summary: NAME, description: "Emploi du temps, devoirs et évaluations, tenu à jour par Basile OS.", timeZone: tz }) });
   await setState(db, userId, { gcalId: cal.id });
   return cal.id;
 }

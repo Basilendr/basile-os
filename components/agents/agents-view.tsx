@@ -97,7 +97,7 @@ export function AgentsView() {
       )}
       {config && <ConfigDialog a={config} onClose={() => setConfig(null)} />}
       {run && <RunDialog a={run} onClose={() => setRun(null)} />}
-      <Dialog open={!!hist} onClose={() => setHist(null)} title={hist ? `Historique — ${hist.name}` : ""} size="lg">
+      <Dialog open={!!hist} onClose={() => setHist(null)} title={hist ? `Historique · ${hist.name}` : ""} size="lg">
         {!hist?.history.length ? (
           <EmptyState icon={<History className="size-5" />} title="Aucune exécution" />
         ) : (
@@ -133,7 +133,7 @@ function ConfigDialog({ a, onClose }: { a: Agent; onClose: () => void }) {
     <Dialog
       open
       onClose={onClose}
-      title={`Configurer — ${a.name}`}
+      title={`Configurer · ${a.name}`}
       description="Accorde uniquement les outils nécessaires à la mission. Les actions externes restent soumises à validation."
       size="lg"
       footer={
@@ -215,7 +215,7 @@ function RunDialog({ a, onClose }: { a: Agent; onClose: () => void }) {
     }
   };
   return (
-    <Dialog open onClose={onClose} title={`Lancer — ${a.name}`} size="lg" footer={<Button variant="primary" loading={loading} disabled={input.trim().length < 3 || !status?.ai.configured} icon={<Play className="size-3.5" />} onClick={go}>Exécuter</Button>}>
+    <Dialog open onClose={onClose} title={`Lancer · ${a.name}`} size="lg" footer={<Button variant="primary" loading={loading} disabled={input.trim().length < 3 || !status?.ai.configured} icon={<Play className="size-3.5" />} onClick={go}>Exécuter</Button>}>
       {!status?.ai.configured && <p className="mb-3 rounded-[8px] border border-warning/30 bg-warning/10 px-3 py-2 text-[12.5px] text-warning">IA non configurée : ajoute ta clé dans Paramètres → Configuration pour exécuter les agents.</p>}
       <Textarea value={input} onChange={(e) => setInput(e.target.value)} rows={3} data-autofocus />
       {loading && (

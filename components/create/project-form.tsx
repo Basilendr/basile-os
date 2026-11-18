@@ -106,7 +106,7 @@ export function ProjectForm({ value, onChange, errors = {} }: { value: ProjectFo
           <Input type="date" value={value.dueDate} onChange={(e) => set("dueDate", e.target.value)} />
         </Field>
       </div>
-      <Field label="Image de couverture (URL)" error={errors.coverUrl?.[0]} hint="Optionnel — URL https d'une image.">
+      <Field label="Image de couverture (URL)" error={errors.coverUrl?.[0]} hint="Optionnel, URL https d'une image.">
         <Input value={value.coverUrl} onChange={(e) => set("coverUrl", e.target.value)} placeholder="https://…" />
       </Field>
     </div>

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpenCheck, CalendarClock, ChevronLeft, ChevronRight, ClipboardList, FileText, FolderOpen, GraduationCap, ListChecks, Plus, RefreshCw, Sparkles, Timer, Trash2, X } from "lucide-react";
+import { BookOpenCheck, CalendarClock, ChevronLeft, ChevronRight, ClipboardList, FileText, FolderOpen, GraduationCap, ListChecks, Plus, RefreshCw, Timer, Trash2, X } from "lucide-react";
 import { api, qs } from "@/lib/client/api";
 import { addDays, cn, formatDueDate, formatTime, isoDate, relativeTime, startOfDay } from "@/lib/utils";
 import { Badge, Card, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui/misc";
@@ -53,7 +53,7 @@ export function SchoolView() {
         description={
           account && account.status !== "disconnected"
             ? [account.studentName, account.className, account.schoolName].filter(Boolean).join(" · ")
-            : "Emploi du temps, devoirs et évaluations — saisis à la main ou importés d'École Directe."
+            : "Emploi du temps, devoirs et évaluations, saisis à la main ou importés d'École Directe."
         }
         actions={
           <>
@@ -238,7 +238,7 @@ function Timetable() {
       )}
       {!showDoc && data?.agent && (
         <p className="flex items-start gap-2 border-b border-line-soft bg-[color-mix(in_srgb,var(--warning)_7%,transparent)] px-4 py-2 text-[12.5px] text-fg-2">
-          <Sparkles className="mt-0.5 size-3.5 shrink-0 text-warning" />
+          <RefreshCw className="mt-0.5 size-3.5 shrink-0 text-warning" />
           <span>
             <span className="font-medium text-fg">Mis à jour automatiquement</span> d'après le message de {data.agent.fromName} du {new Date(data.agent.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : {data.agent.note}
             {changed > 0 && ` (${changed} cours concerné${changed > 1 ? "s" : ""} cette semaine)`}
@@ -252,10 +252,10 @@ function Timetable() {
       ) : showDoc && doc ? (
         <div className="min-h-[520px] flex-1 bg-raised">
           {/\.pdf$/i.test(doc.name) ? (
-            <iframe key={doc.fileId} title={`Emploi du temps — ${doc.name}`} src={`/api/school/timetable/document?file=${doc.fileId}#view=Fit&navpanes=0`} className="size-full min-h-[520px] border-0" />
+            <iframe key={doc.fileId} title={`Emploi du temps · ${doc.name}`} src={`/api/school/timetable/document?file=${doc.fileId}#view=Fit&navpanes=0`} className="size-full min-h-[520px] border-0" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={`/api/school/timetable/document?file=${doc.fileId}`} alt={`Emploi du temps — ${doc.name}`} className="mx-auto max-h-full max-w-full object-contain" />
+            <img src={`/api/school/timetable/document?file=${doc.fileId}`} alt={`Emploi du temps · ${doc.name}`} className="mx-auto max-h-full max-w-full object-contain" />
           )}
         </div>
       ) : (
@@ -282,7 +282,7 @@ function Timetable() {
                         <Link
                           key={h.id}
                           href={h.isTest ? "/quiz" : "/school?tab=homework"}
-                          title={`${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? ` — ${h.title}` : ""}`}
+                          title={`${h.isTest ? "Évaluation" : "Devoir"} · ${h.subject}${h.title ? `, ${h.title}` : ""}`}
                           className={cn("max-w-full truncate rounded-[6px] px-1.5 py-0.5 text-[10.5px] font-semibold", h.isTest ? "bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-danger" : h.done ? "bg-raised text-fg-3 line-through" : "bg-raised text-fg-2")}
                         >
                           {h.isTest ? "Éval" : "Devoir"} · {h.subject.split(/[ .&-]/)[0]}
@@ -328,7 +328,7 @@ function Timetable() {
                       <button
                         key={l.id}
                         onClick={() => setSelected(l)}
-                        title={ch ? `${ch.note || flag || ""} — ${ch.origin}` : undefined}
+                        title={ch ? `${ch.note || flag || ""}, ${ch.origin}` : undefined}
                         className={cn("focus-ring absolute inset-x-1 overflow-hidden rounded-[9px] border px-2 py-1 text-left transition-shadow hover:shadow-[var(--shadow-md)]", l.cancelled && "opacity-45", (flag || l.kind === "EVENT") && "border-dashed border-[1.5px]")}
                         style={{ top: Math.max(0, top) + 1, height: h, background: `color-mix(in srgb, ${color} 12%, var(--card))`, borderColor: flag ? "var(--warning)" : `color-mix(in srgb, ${color} 30%, transparent)` }}
                       >
@@ -372,7 +372,7 @@ function LessonDetails({ lesson, homework, onClose }: { lesson: SchoolLesson | n
         <div className="space-y-3 text-[13px]">
           {ch && (
             <div className={cn("rounded-[10px] border px-3 py-2", ch.kind === "cancelled" ? "border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_7%,transparent)]" : "border-[color-mix(in_srgb,var(--warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--warning)_9%,transparent)]")}>
-              <p className="font-medium">{ch.kind === "cancelled" ? "Cours annulé" : ch.kind === "modified" ? "Cours modifié" : ch.kind === "added" ? "Cours ajouté" : "Événement"}{ch.note ? ` — ${ch.note}` : ""}</p>
+              <p className="font-medium">{ch.kind === "cancelled" ? "Cours annulé" : ch.kind === "modified" ? "Cours modifié" : ch.kind === "added" ? "Cours ajouté" : "Événement"}{ch.note ? `, ${ch.note}` : ""}</p>
               {ch.before && (
                 <p className="t-meta mt-0.5">
                   Avant : {ch.before.subject}, {ch.before.start}–{ch.before.end}
@@ -384,13 +384,13 @@ function LessonDetails({ lesson, homework, onClose }: { lesson: SchoolLesson | n
           )}
           <dl className="grid grid-cols-[110px_1fr] gap-y-1.5">
             <dt className="text-fg-3">Salle</dt>
-            <dd>{roomName(lesson.room) || "—"}</dd>
+            <dd>{roomName(lesson.room) || "–"}</dd>
             <dt className="text-fg-3">Professeur</dt>
-            <dd>{lesson.teacher || "—"}</dd>
+            <dd>{lesson.teacher || "–"}</dd>
             <dt className="text-fg-3">Statut</dt>
             <dd>{lesson.cancelled ? <Badge tone="danger">Annulé</Badge> : ch?.kind === "modified" ? <Badge tone="warning">Modifié</Badge> : <Badge tone="success">Maintenu</Badge>}</dd>
             <dt className="text-fg-3">Source</dt>
-            <dd>{lesson.source === "week" ? `Emploi du temps de la semaine — ${lesson.origin ?? "vie scolaire"}` : lesson.source === "ecoledirecte" ? (lesson.origin ? `École Directe, corrigé d'après l'emploi du temps reçu (${lesson.origin})` : "École Directe") : lesson.source === "change" ? "Message de la vie scolaire" : "Ajout manuel"}</dd>
+            <dd>{lesson.source === "week" ? `Emploi du temps de la semaine · ${lesson.origin ?? "vie scolaire"}` : lesson.source === "ecoledirecte" ? (lesson.origin ? `École Directe, corrigé d'après l'emploi du temps reçu (${lesson.origin})` : "École Directe") : lesson.source === "change" ? "Message de la vie scolaire" : "Ajout manuel"}</dd>
           </dl>
           {homework.length > 0 && (
             <div>
@@ -612,7 +612,7 @@ function HomeworkRow({ h }: { h: SchoolHomework }) {
       </div>
       {open && h.contentHtml && (
         <iframe
-          title={`Détail — ${h.subject}`}
+          title={`Détail · ${h.subject}`}
           sandbox=""
           srcDoc={`<!doctype html><meta charset="utf-8"><style>body{font:13px/1.55 -apple-system,system-ui,sans-serif;color:#1d1d1f;margin:0;padding:10px 12px}a{color:#0071e3}img{max-width:100%}</style>${h.contentHtml}`}
           className="mt-2 ml-8 h-40 w-[calc(100%-2rem)] rounded-[10px] border border-line bg-white"
@@ -786,7 +786,7 @@ function Evaluations() {
           <Card className="p-4">
             <p className="text-[13px] font-medium text-fg-2">Moyenne générale</p>
             <p className="t-num mt-3 text-[32px] leading-none font-semibold tracking-[-0.03em]">
-              {avg.general !== null ? avg.general.toLocaleString("fr-FR") : "—"}
+              {avg.general !== null ? avg.general.toLocaleString("fr-FR") : "–"}
               <span className="text-[15px] font-medium text-fg-3"> /20</span>
             </p>
             <p className="t-meta mt-2">Moyenne des moyennes par matière (calculée)</p>
@@ -809,7 +809,7 @@ function Evaluations() {
                 );
               })()
             ) : (
-              <p className="t-num mt-3 text-[32px] leading-none font-semibold text-fg-3">—</p>
+              <p className="t-num mt-3 text-[32px] leading-none font-semibold text-fg-3">–</p>
             )}
           </Card>
         </div>
@@ -864,11 +864,11 @@ function Evaluations() {
                         </td>
                         <td className="px-2 py-2.5 text-right">
                           <Badge tone={tone as "success" | "neutral" | "danger"} className="t-num">
-                            {g.value ?? "—"}/{g.outOf}
+                            {g.value ?? "–"}/{g.outOf}
                           </Badge>
                         </td>
                         <td className="t-num px-2 py-2.5 text-right text-fg-2">{g.coef}</td>
-                        <td className="t-num px-2 py-2.5 text-right text-fg-3">{g.classAverage || "—"}</td>
+                        <td className="t-num px-2 py-2.5 text-right text-fg-3">{g.classAverage || "–"}</td>
                         <td className="pr-2 text-right">
                           {g.source === "manual" && (
                             <button

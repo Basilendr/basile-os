@@ -8,7 +8,7 @@ import { env } from "./env";
 const scrypt = promisify(_scrypt) as (pw: string, salt: Buffer, len: number, opts: object) => Promise<Buffer>;
 const SCRYPT = { N: 2 ** 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
-/** Hachage scrypt — format : scrypt$N$r$p$sel$hash (base64url). */
+/** Hachage scrypt, format : scrypt$N$r$p$sel$hash (base64url). */
 export async function hashPassword(password: string) {
   const salt = randomBytes(16);
   const hash = await scrypt(password, salt, 64, SCRYPT);

@@ -185,7 +185,7 @@ function LocalFiles() {
               <span className="min-w-0 flex-1 truncate text-[13.5px]">{f.name}</span>
               {f.favorite && <Star className="size-3.5 fill-warning text-warning" />}
               {f.projectId && <Badge>Projet</Badge>}
-              <span className="t-meta hidden w-20 text-right sm:block">{f.isFolder ? "—" : size(f.size)}</span>
+              <span className="t-meta hidden w-20 text-right sm:block">{f.isFolder ? "–" : size(f.size)}</span>
               <span className="t-meta hidden w-28 text-right md:block">{relativeTime(f.updatedAt)}</span>
               <ItemMenu f={f} />
             </div>
@@ -370,7 +370,7 @@ function FilePreview({ id, onClose }: { id: string | null; onClose: () => void }
                 setNoting(true);
                 try {
                   const r = await api.post<{ text: string }>("/api/ai/transform", { action: "summarize", text: f.textContent!.slice(0, 100_000), title: f.name });
-                  const n = await api.post<{ id: string }>("/api/notes", { title: `Synthèse — ${f.name}`, contentText: r.text, content: { type: "doc", content: r.text.split("\n").filter(Boolean).map((l) => ({ type: "paragraph", content: [{ type: "text", text: l.replace(/^[-*]\s*/, "• ") }] })) }, projectId: f.projectId });
+                  const n = await api.post<{ id: string }>("/api/notes", { title: `Synthèse · ${f.name}`, contentText: r.text, content: { type: "doc", content: r.text.split("\n").filter(Boolean).map((l) => ({ type: "paragraph", content: [{ type: "text", text: l.replace(/^[-*]\s*/, "• ") }] })) }, projectId: f.projectId });
                   await api.post("/api/brain/links", { fromType: "note", fromId: n.id, toType: "file", toId: f.id, relation: "synthèse" });
                   toast({ kind: "success", title: "Note structurée créée", action: { label: "Ouvrir", run: () => (window.location.href = `/notes?note=${n.id}`) } });
                 } catch (e) {

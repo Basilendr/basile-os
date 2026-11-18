@@ -141,9 +141,9 @@ function RunsTable({ rows }: { rows: { run: Run; name?: string }[] }) {
                   {r.attempt > 1 && ` (essai ${r.attempt})`}
                 </Badge>
               </td>
-              <td className="t-num px-4 py-2.5">{r.durationMs !== null ? `${r.durationMs} ms` : "—"}</td>
+              <td className="t-num px-4 py-2.5">{r.durationMs !== null ? `${r.durationMs} ms` : "–"}</td>
               <td className="t-meta max-w-[320px] truncate px-4 py-2.5" title={r.error ?? JSON.stringify(r.result)}>
-                {r.error ?? ((r.result as { reason?: string }).reason || ((r.result as { actions?: { action: string }[] }).actions ?? []).map((a) => ACTIONS[a.action]?.label ?? a.action).join(", ") || "—")}
+                {r.error ?? ((r.result as { reason?: string }).reason || ((r.result as { actions?: { action: string }[] }).actions ?? []).map((a) => ACTIONS[a.action]?.label ?? a.action).join(", ") || "–")}
               </td>
             </tr>
           ))}

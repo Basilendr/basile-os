@@ -122,7 +122,7 @@ async function edContext(db: DB, userId: string, from: string, to: string, tz: s
     const b = localParts(r.endAt, tz);
     const t = (x: number) => `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(x % 60).padStart(2, "0")}`;
     if (NOT_A_CLASS.test(r.subject)) continue;
-    byDay.set(a.date, [...(byDay.get(a.date) ?? []), `${t(a.minutes)}-${t(b.minutes)} ${r.subject}${r.teacher ? ` — ${r.teacher}` : ""}${r.room ? ` — salle ${r.room.replace(/<[^>]*>/g, "")}` : ""}${r.cancelled ? " (annulé)" : ""}`]);
+    byDay.set(a.date, [...(byDay.get(a.date) ?? []), `${t(a.minutes)}-${t(b.minutes)} ${r.subject}${r.teacher ? `, ${r.teacher}` : ""}${r.room ? `, salle ${r.room.replace(/<[^>]*>/g, "")}` : ""}${r.cancelled ? " (annulé)" : ""}`]);
   }
   return [...byDay.entries()].map(([d, list]) => `${new Date(`${d}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })} (${d}) : ${list.join(" ; ")}`).join("\n");
 }

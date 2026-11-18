@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { CalendarRange, Check, ChevronDown, Download, LayoutGrid, Replace, Sun } from "lucide-react";
+import { CalendarRange, Check, ChevronDown, Download, LayoutGrid, Replace, CalendarCheck2 } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { addDays, cn, isoDate, startOfDay } from "@/lib/utils";
 import { WIDGETS, WIDGET_SLOTS, type WidgetKey } from "@/lib/catalog";
@@ -99,7 +99,7 @@ export function Overview() {
         actions={
           <>
             <Link href="/today">
-              <Button size="sm" variant="primary" icon={<Sun className="size-3.5" />}>
+              <Button size="sm" variant="primary" icon={<CalendarCheck2 className="size-3.5" />}>
                 Aujourd'hui
               </Button>
             </Link>

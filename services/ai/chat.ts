@@ -88,7 +88,7 @@ export function streamTurn(db: DB, userId: string, input: { conversationId?: str
               send({ type: "step", id, tool: call.name, status: "awaiting_approval", summary: res.summary });
               const [p] = await pendingByIds(db, userId, [res.pendingId]);
               send({ type: "pending", action: { id: p.id, tool: p.tool, summary: p.summary, args: p.args, status: p.status } });
-              return { content: JSON.stringify({ status: "en attente de confirmation explicite de l'utilisateur — ne pas considérer comme effectué", pendingActionId: res.pendingId }) };
+              return { content: JSON.stringify({ status: "en attente de confirmation explicite de l'utilisateur, ne pas considérer comme effectué", pendingActionId: res.pendingId }) };
             }
             steps.push({ tool: call.name, status: res.isError ? "error" : "done", summary: label });
             send({ type: "step", id, tool: call.name, status: res.isError ? "error" : "done", summary: label });

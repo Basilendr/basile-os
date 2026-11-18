@@ -123,7 +123,7 @@ export function NotificationsPopover({ open, onClose }: { open: boolean; onClose
             exit={{ opacity: 0, scale: 0.98, y: -4 }}
             transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
             style={{ transformOrigin: "top right" }}
-            className="fixed top-[76px] right-3 z-[61] flex max-h-[min(560px,calc(100dvh-96px))] w-[min(400px,calc(100vw-16px))] flex-col overflow-hidden rounded-[18px] border border-line bg-card shadow-[var(--shadow-lg)]"
+            className="fixed top-[76px] right-3 z-[61] flex max-h-[min(560px,calc(100dvh-96px))] w-[min(400px,calc(100vw-16px))] flex-col overflow-hidden rounded-[18px] border border-line bg-card shadow-[var(--shadow-float)]"
           >
             <div className="flex items-center justify-between gap-2 border-b border-line-soft px-3.5 py-2.5">
               <span className="t-section">Notifications</span>

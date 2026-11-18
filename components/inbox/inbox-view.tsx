@@ -348,7 +348,7 @@ function AdvancedFilters({ open, onClose, onApply }: { open: boolean; onClose: (
           </label>
         </div>
       </div>
-      <p className="t-meta mt-3 font-mono">{build() || "—"}</p>
+      <p className="t-meta mt-3 font-mono">{build() || "–"}</p>
     </Dialog>
   );
 }

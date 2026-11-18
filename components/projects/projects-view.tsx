@@ -145,7 +145,7 @@ function ProjectList({ items }: { items: Project[] }) {
             <Progress value={p.progress} color={p.color} className="w-20" />
             <span className="t-num text-[12px] text-fg-2">{p.progress}%</span>
           </span>
-          <span className="t-meta hidden md:block">{p.dueDate ? formatDueDate(p.dueDate) : "—"}</span>
+          <span className="t-meta hidden md:block">{p.dueDate ? formatDueDate(p.dueDate) : "–"}</span>
         </Link>
       ))}
     </div>
@@ -205,7 +205,7 @@ function DraggableProject({ p }: { p: Project }) {
       {...listeners}
       onClick={() => router.push(`/projects/${p.id}`)}
       style={transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : undefined}
-      className={cn("cursor-grab rounded-[10px] border border-line bg-card p-3", isDragging && "z-10 shadow-[var(--shadow-lg)]")}
+      className={cn("cursor-grab rounded-[10px] border border-line bg-card p-3", isDragging && "z-10 shadow-[var(--shadow-float)]")}
     >
       <div className="flex items-center gap-2">
         <ProjectIcon name={p.icon} className="size-3.5" style={{ color: p.color }} />

@@ -100,7 +100,7 @@ export async function removeEntity(db: DB, userId: string, entityType: string, e
 
 export type SemanticHit = { entityType: string; entityId: string; content: string; score: number };
 
-/** Recherche vectorielle (distance cosinus pgvector) — un résultat par entité, le meilleur segment. */
+/** Recherche vectorielle (distance cosinus pgvector), un résultat par entité, le meilleur segment. */
 export async function semanticSearch(db: DB, userId: string, query: string, opts: { limit?: number; types?: string[] } = {}): Promise<SemanticHit[]> {
   const p = embeddingsProvider();
   if (!p) throw new AppError("not_configured", "La recherche sémantique nécessite un fournisseur d'embeddings (VOYAGE_API_KEY ou OPENAI_API_KEY).");

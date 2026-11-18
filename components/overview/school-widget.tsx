@@ -53,7 +53,7 @@ export function SchoolWidget() {
               <p className="t-meta mt-1">éval{data.tests.length > 1 ? "s" : ""} · 21 j</p>
             </Link>
             <Link href="/school?tab=evals" className="rounded-[12px] border border-line-soft bg-bg px-3 py-2.5 hover:border-line">
-              <p className="t-num text-[20px] leading-none font-semibold">{data.average !== null ? data.average.toLocaleString("fr-FR") : "—"}</p>
+              <p className="t-num text-[20px] leading-none font-semibold">{data.average !== null ? data.average.toLocaleString("fr-FR") : "–"}</p>
               <p className="t-meta mt-1">moyenne</p>
             </Link>
           </div>
@@ -74,7 +74,7 @@ export function SchoolWidget() {
           {data.tests[0] && (
             <Link href="/school?tab=evals" className="flex items-center gap-2 px-1 text-[12.5px]">
               <Badge tone="warning">Éval</Badge>
-              <span className="min-w-0 flex-1 truncate">{data.tests[0].subject}{data.tests[0].title ? ` — ${data.tests[0].title}` : ""}</span>
+              <span className="min-w-0 flex-1 truncate">{data.tests[0].subject}{data.tests[0].title ? `, ${data.tests[0].title}` : ""}</span>
               <span className="t-meta">{formatDueDate(data.tests[0].dueDate)}</span>
             </Link>
           )}

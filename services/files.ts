@@ -236,7 +236,7 @@ export async function updateFile(db: DB, userId: string, id: string, patch: z.in
   return row;
 }
 
-/** Suppression récursive (dossiers) — fichiers physiques effacés du stockage privé. */
+/** Suppression récursive (dossiers), fichiers physiques effacés du stockage privé. */
 export async function deleteFile(db: DB, userId: string, id: string) {
   const root = await getFile(db, userId, id);
   const ids = [root.id];

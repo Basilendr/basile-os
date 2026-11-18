@@ -66,7 +66,7 @@ Règles :
 - Sinon, choisis dans le texte ce qu'un élève doit retenir : vocabulaire du thème, expressions et tournures utiles, connecteurs, verbes importants (surtout irréguliers). Laisse de côté les mots transparents (identiques au français), les noms propres et les mots que tout débutant connaît.
 - Environ une carte pour 150 mots de cours, entre 10 et 80 cartes, sans doublon.
 - Forme de dictionnaire : verbe à l'infinitif (en anglais avec « to » : « to look forward to », pas « looking forward to »), nom au singulier avec son article quand la langue en a un ; traduction française avec l'article (« la banlieue », « l'amitié »).
-- "note" : seulement si elle aide vraiment, et toujours sur la langue étudiée (verbe irrégulier et ses formes, préposition qui suit, genre d'un nom allemand ou espagnol, faux ami, pluriel irrégulier) — jamais sur la grammaire française ; sinon null.
+- "note" : seulement si elle aide vraiment, et toujours sur la langue étudiée (verbe irrégulier et ses formes, préposition qui suit, genre d'un nom allemand ou espagnol, faux ami, pluriel irrégulier), jamais sur la grammaire française ; sinon null.
 - N'invente rien qui contredise le cours ; les traductions proposées par le cours sont prioritaires.
 - Orthographe exacte de la langue étudiée, accents et majuscules compris (noms allemands avec majuscule).
 - Si le document n'est pas un cours de langue étrangère, renvoie isLanguageCourse: false et cards: [].

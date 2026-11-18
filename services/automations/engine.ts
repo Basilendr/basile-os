@@ -42,7 +42,7 @@ export function matches(conditions: AutomationCondition[], ctx: Record<string, u
   });
 }
 
-/** Gabarits {{data.subject}} — remplacement textuel uniquement (jamais d'évaluation de code). */
+/** Gabarits {{data.subject}}, remplacement textuel uniquement (jamais d'évaluation de code). */
 export function render(tpl: unknown, ctx: Record<string, unknown>): string {
   return String(tpl ?? "").replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, p) => String(get(ctx, p) ?? "")).slice(0, 2000);
 }
@@ -68,7 +68,7 @@ async function runAction(db: DB, a: Automation, action: AutomationAction, ctx: R
       const { createTask } = await import("../tasks");
       const days = Number(c.dueInDays);
       const t = await createTask(db, userId, {
-        title: render(c.title || "{{data.title}}", ctx) || `Tâche — ${a.name}`,
+        title: render(c.title || "{{data.title}}", ctx) || `Tâche · ${a.name}`,
         description: render(c.description, ctx),
         priority: (["low", "medium", "high", "urgent"].includes(String(c.priority)) ? c.priority : "medium") as "medium",
         dueDate: Number.isFinite(days) && c.dueInDays !== "" && c.dueInDays !== undefined ? isoDate(addDays(new Date(), days)) : null,

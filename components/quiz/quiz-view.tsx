@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowRight, CalendarClock, Check, FileText, Flame, FolderOpen, Languages, ListChecks, Loader2, Plus, RefreshCw, RotateCcw, Settings2, Sparkles, Target, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarClock, Check, FileText, Flame, FolderOpen, Languages, ListChecks, Loader2, Plus, RefreshCw, RotateCcw, Settings2, Target, Trash2, X } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { cn, plural } from "@/lib/utils";
 import { Badge, Card, CardHeader, EmptyState, ErrorState, PageHeader, Progress, Skeleton, type Tone } from "@/components/ui/misc";
@@ -201,7 +201,7 @@ export function QuizView() {
               <CardHeader title="Ma progression" icon={<Target className="size-4" />} />
               <div className="grid grid-cols-3 gap-2 px-4">
                 <Stat icon={<Flame className={cn("size-3.5", o.stats.streak > 0 && "text-[var(--tone-orange)]")} />} value={String(o.stats.streak)} label={o.stats.streak > 1 ? "jours de suite" : "jour de suite"} />
-                <Stat value={o.stats.week.pct === null ? "—" : `${o.stats.week.pct} %`} label="de réussite sur 7 jours" />
+                <Stat value={o.stats.week.pct === null ? "–" : `${o.stats.week.pct} %`} label="de réussite sur 7 jours" />
                 <Stat value={String(o.stats.week.questions)} label="questions sur 7 jours" />
               </div>
               <div className="px-4 pt-4 pb-4">
@@ -394,7 +394,7 @@ function Today({ o, busy, onReview, onRetry, onCreate }: { o: Overview; busy: st
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_140%_at_0%_0%,color-mix(in_srgb,var(--accent)_13%,transparent),transparent_60%)]" />
       <div className="relative flex items-start gap-4 p-5">
         <div className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-accent">
-          {generating ? <Loader2 className="size-6 animate-spin" /> : list.length && left === 0 ? <Check className="size-6" /> : <Sparkles className="size-6" />}
+          {generating ? <Loader2 className="size-6 animate-spin" /> : list.length && left === 0 ? <Check className="size-6" /> : <ListChecks className="size-6" />}
         </div>
         <div className="min-w-0 flex-1">
           <p className="t-meta font-medium tracking-wide uppercase">Quiz du jour · {day(today.date, { weekday: "long", day: "numeric", month: "long" })}</p>
@@ -466,7 +466,7 @@ function Today({ o, busy, onReview, onRetry, onCreate }: { o: Overview; busy: st
                       }}
                     >
                       <Input autoFocus value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={300} placeholder="Partie à réviser (facultatif), ex. « thème 3 »" className="w-full" aria-label="Partie à réviser" />
-                      <Button type="submit" variant="primary" loading={sending === d.id} icon={<Sparkles className="size-3.5" />}>
+                      <Button type="submit" variant="primary" loading={sending === d.id} icon={<ListChecks className="size-3.5" />}>
                         {focus.trim() ? "Quiz sur cette partie" : "Quiz sur tout le document"}
                       </Button>
                     </form>
@@ -724,7 +724,7 @@ function CreateDialog({ open, onClose, defaultCount }: { open: boolean; onClose:
             </Button>
             <Button
               variant="primary"
-              icon={<Sparkles className="size-3.5" />}
+              icon={<ListChecks className="size-3.5" />}
               disabled={!docs.length}
               loading={busy === "create"}
               onClick={() =>
@@ -782,10 +782,10 @@ function CreateDialog({ open, onClose, defaultCount }: { open: boolean; onClose:
               <Segmented value={difficulty} onChange={setDifficulty} options={[{ value: "easy", label: "Facile" }, { value: "normal", label: "Normal" }, { value: "hard", label: "Difficile" }]} className="self-start" />
             </div>
           </div>
-          <Field label="Sur quoi insister ?" hint="Optionnel — par exemple « les dates », « le vocabulaire », « le chapitre 3 ».">
+          <Field label="Sur quoi insister ?" hint="Optionnel. Par exemple « les dates », « le vocabulaire », « le chapitre 3 ».">
             <Textarea rows={2} value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={500} className="min-h-[60px]" />
           </Field>
-          <Field label="Titre" hint="Optionnel — sinon l'IA en propose un.">
+          <Field label="Titre" hint="Optionnel, sinon l'IA en propose un.">
             <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
           </Field>
         </div>

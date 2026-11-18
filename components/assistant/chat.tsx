@@ -295,7 +295,7 @@ export function Composer({ onSend, busy, onStop, placeholder = "Demande quelque 
           }
         }}
         rows={1}
-        placeholder={status && !status.ai.configured ? "IA non configurée — ajoute ta clé dans Paramètres → Configuration" : placeholder}
+        placeholder={status && !status.ai.configured ? "IA non configurée, ajoute ta clé dans Paramètres → Configuration" : placeholder}
         className="block max-h-[200px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-[14px] placeholder:text-fg-3 focus:outline-none"
         aria-label="Message"
       />

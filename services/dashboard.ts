@@ -11,7 +11,7 @@ import { isServiceConnected } from "./google/oauth";
 import { recentActivity } from "./activity";
 import { rowsOf } from "@/lib/sql";
 
-/** Données de la vue d'ensemble — exclusivement issues des données réelles de l'utilisateur. */
+/** Données de la vue d'ensemble, exclusivement issues des données réelles de l'utilisateur. */
 export async function dashboard(db: DB, userId: string, tz: { from: Date; to: Date }, periodDays = 7) {
   const today = isoDate();
   const [counts, events, projects, gmailOn, calendarOn, activity, widgets, briefing, trend] = await Promise.all([
