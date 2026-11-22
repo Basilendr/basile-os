@@ -13,6 +13,7 @@ import { CommandPalette } from "./command-palette";
 import { UIProvider, useUI, type Me } from "./ui-context";
 import { NAV, isActive } from "./nav";
 import { LogoMark } from "./logo";
+import { usePrefetchPage } from "@/lib/client/prefetch";
 import { CreateDialogs } from "@/components/create/create-dialogs";
 import { AssistantDrawer } from "@/components/assistant/drawer";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,7 @@ function ShellInner({ children }: { children: ReactNode }) {
 function MobileTabBar() {
   const pathname = usePathname();
   const { setMobileNavOpen } = useUI();
+  const prefetch = usePrefetchPage();
   const tabs = [
     { href: "/", label: "Accueil", icon: House },
     { href: "/today", label: "Aujourd'hui", icon: CalendarCheck2 },
@@ -148,6 +150,7 @@ function MobileTabBar() {
             <Link
               key={t.href}
               href={t.href}
+              onTouchStart={() => prefetch(t.href)}
               aria-current={active ? "page" : undefined}
               className={cn("flex h-[50px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-medium transition-[transform,background-color] active:scale-90", active ? "bg-[var(--seg-active)] text-[var(--seg-active-fg)] shadow-[0_4px_14px_-4px_rgb(0_0_0/0.45)]" : "text-fg-2")}
             >

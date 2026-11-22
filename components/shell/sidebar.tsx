@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronRight, LogOut, Settings } from "lucide-react";
 import { FOLDERS, SHORTCUTS, TONES, activeHref, folderOf, type NavFolder, type NavLeaf } from "./nav";
 import { api } from "@/lib/client/api";
+import { usePrefetchPage } from "@/lib/client/prefetch";
 import { cn } from "@/lib/utils";
 
 const SPRING = { type: "spring", bounce: 0, visualDuration: 0.28 } as const;
@@ -87,10 +88,13 @@ export function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; 
 
 function Shortcut({ leaf, active, collapsed, onNavigate }: { leaf: NavLeaf; active: boolean; collapsed: boolean; onNavigate?: () => void }) {
   const Icon = leaf.icon;
+  const prefetch = usePrefetchPage();
   return (
     <Link
       href={leaf.href}
       onClick={onNavigate}
+      onMouseEnter={() => prefetch(leaf.href)}
+      onFocus={() => prefetch(leaf.href)}
       aria-label={collapsed ? leaf.label : undefined}
       aria-current={active ? "page" : undefined}
       className={cn(
@@ -148,6 +152,7 @@ function Folder({ folder, open, highlighted, active, onToggle, onNavigate }: { f
 
 function Tiles({ folder, active, onNavigate, className }: { folder: NavFolder; active: string | null; onNavigate?: () => void; className?: string }) {
   const t = TONES[folder.tone];
+  const prefetch = usePrefetchPage();
   return (
     <ul className={cn("grid grid-cols-2 gap-1.5", className)}>
       {folder.items.map((it) => {
@@ -158,6 +163,8 @@ function Tiles({ folder, active, onNavigate, className }: { folder: NavFolder; a
             <Link
               href={it.href}
               onClick={onNavigate}
+              onMouseEnter={() => prefetch(it.href)}
+              onFocus={() => prefetch(it.href)}
               aria-current={on ? "page" : undefined}
               className={cn(
                 "focus-ring group flex h-[62px] flex-col justify-between rounded-[12px] border p-2.5 transition-[background-color,border-color,box-shadow,transform] duration-150 active:scale-[0.97]",

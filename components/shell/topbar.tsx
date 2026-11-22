@@ -13,6 +13,7 @@ import { useStatus } from "@/hooks/use-status";
 import { Kbd } from "@/components/ui/misc";
 import { Menu } from "@/components/ui/menu";
 import { api } from "@/lib/client/api";
+import { usePrefetchPage } from "@/lib/client/prefetch";
 import { PomodoroPill } from "@/components/school/pomodoro";
 
 /** Rubriques principales, en pastilles au centre de la barre (ordinateur). */
@@ -31,6 +32,7 @@ export function Topbar() {
   const [isMac, setIsMac] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const prefetch = usePrefetchPage();
   useEffect(() => {
     setIsMac(/Mac|iPhone|iPad/.test(navigator.platform));
   }, []);
@@ -65,6 +67,8 @@ export function Topbar() {
               <Link
                 key={m.href}
                 href={m.href}
+                onMouseEnter={() => prefetch(m.href)}
+                onFocus={() => prefetch(m.href)}
                 aria-current={on ? "page" : undefined}
                 className={cn("focus-ring relative flex h-9 items-center gap-2 rounded-full px-4 text-[13.5px] font-medium transition-colors", on ? "text-[var(--seg-active-fg)]" : "text-fg-2 hover:text-fg")}
               >
