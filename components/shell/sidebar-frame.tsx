@@ -13,7 +13,8 @@ export function Sidebar() {
   return (
     <motion.aside
       className={cn(
-        "hidden shrink-0 border border-line bg-card shadow-[var(--shadow-md)] md:block",
+        // z-30 : les bulles des icônes (« Accueil », « Paramètres »…) passent au-dessus de la page, pas dessous.
+        "relative z-30 hidden shrink-0 border border-line bg-card shadow-[var(--shadow-md)] md:block",
         collapsed ? "self-center rounded-[32px]" : "overflow-hidden rounded-[24px]",
       )}
       initial={false}
