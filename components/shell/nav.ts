@@ -25,6 +25,7 @@ import {
   Command,
   Bot,
   Languages,
+  BookMarked,
   type LucideIcon,
 } from "lucide-react";
 import { AssistantIcon } from "./assistant-icon";
@@ -59,7 +60,7 @@ export const FOLDERS: NavFolder[] = [
   {
     id: "ecole",
     label: "École",
-    hint: "Cours · Quiz · Vocabulaire",
+    hint: "Cours · Quiz · Définitions",
     tone: "green",
     items: [
       { href: "/school?tab=timetable", label: "Emploi du temps", icon: Clock, shortcut: "G E" },
@@ -67,6 +68,7 @@ export const FOLDERS: NavFolder[] = [
       { href: "/school?tab=evals", label: "Évaluations", icon: ClipboardCheck },
       { href: "/quiz", label: "Quiz", icon: ListChecks, shortcut: "G Q" },
       { href: "/vocabulaire", label: "Vocabulaire", icon: Languages, shortcut: "G V" },
+      { href: "/definitions", label: "Définitions", icon: BookMarked, shortcut: "G D" },
       { href: "/school?tab=focus", label: "Pomodoro", icon: Timer },
       { href: "/inbox?box=school", label: "Messages ED", icon: Inbox },
     ],

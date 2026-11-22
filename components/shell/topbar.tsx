@@ -18,7 +18,7 @@ import { PomodoroPill } from "@/components/school/pomodoro";
 /** Rubriques principales, en pastilles au centre de la barre (ordinateur). */
 const MAIN = [
   { href: "/", label: "Accueil", icon: House, match: ["/", "/today"] },
-  { href: "/school", label: "École", icon: GraduationCap, match: ["/school", "/quiz", "/vocabulaire"] },
+  { href: "/school", label: "École", icon: GraduationCap, match: ["/school", "/quiz", "/vocabulaire", "/definitions"] },
   { href: "/tasks", label: "Tâches", icon: ListChecks, match: ["/tasks", "/projects", "/calendar", "/notes"] },
   { href: "/inbox", label: "Messages", icon: Inbox, match: ["/inbox"] },
 ];

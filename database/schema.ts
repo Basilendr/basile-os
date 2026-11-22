@@ -1272,3 +1272,57 @@ export const flashCards = pgTable(
   },
   (t) => [index("flash_cards_deck_idx").on(t.deckId, t.position), index("flash_cards_due_idx").on(t.userId, t.dueDate)],
 );
+
+/* ------------------------------------------------------------------ définitions à apprendre */
+
+/** Paquets de définitions (SES, histoire, philo…) : collés, tirés d'un document Drive ou saisis à la main. */
+export const defDecks = pgTable(
+  "def_decks",
+  {
+    id: id(),
+    userId: owner(),
+    title: text("title").notNull().default(""),
+    /** Matière (SES, Histoire…), libre. */
+    subject: text("subject"),
+    source: text("source").notNull(), // drive | text | manual
+    sources: jsonb("sources").$type<QuizSource[]>().notNull().default([]),
+    focus: text("focus"),
+    text: text("text").notNull().default(""),
+    status: text("status").notNull().default("ready"), // generating | ready | error
+    error: text("error"),
+    /** Analyse des mots importants par l'IA : none | generating | ready | error. */
+    keywordsStatus: text("keywords_status").notNull().default("none"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("def_decks_user_idx").on(t.userId, t.createdAt)],
+);
+
+/** Une définition : la notion, sa définition et ses mots importants ; répétition espacée. */
+export const defCards = pgTable(
+  "def_cards",
+  {
+    id: id(),
+    userId: owner(),
+    deckId: uuid("deck_id")
+      .notNull()
+      .references(() => defDecks.id, { onDelete: "cascade" }),
+    term: text("term").notNull(),
+    definition: text("definition").notNull(),
+    /** Mots ou expressions clés, repris tels quels de la définition. */
+    keywords: jsonb("keywords").$type<string[]>().notNull().default([]),
+    /** Origine des mots clés : auto (calcul local), ai, manual. */
+    keywordsBy: text("keywords_by").notNull().default("auto"),
+    position: integer("position").notNull().default(0),
+    state: text("state").notNull().default("new"), // new | learning | review
+    interval: integer("interval").notNull().default(0),
+    ease: integer("ease").notNull().default(250),
+    reps: integer("reps").notNull().default(0),
+    lapses: integer("lapses").notNull().default(0),
+    dueDate: date("due_date"),
+    lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("def_cards_deck_idx").on(t.deckId, t.position), index("def_cards_due_idx").on(t.userId, t.dueDate)],
+);
